@@ -81,40 +81,46 @@
 
     <!-- BOTTOM NAVIGATION -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] z-50 transition-transform duration-300">
-        <div class="flex justify-around items-center h-16">
-            <button onclick="router.navigate('dashboard')" class="nav-btn w-full h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-dashboard">
+        <div class="flex justify-between items-center h-16 px-1">
+            <button onclick="router.navigate('dashboard')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-dashboard">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                     <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h2.25a3 3 0 013 3v2.25a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm9.75 0a3 3 0 013-3H18a3 3 0 013 3v2.25a3 3 0 01-3 3h-2.25a3 3 0 01-3-3V6zM3 15.75a3 3 0 013-3h2.25a3 3 0 013 3V18a3 3 0 01-3 3H6a3 3 0 01-3-3v-2.25zm9.75 0a3 3 0 013-3H18a3 3 0 013 3V18a3 3 0 01-3 3h-2.25a3 3 0 01-3-3v-2.25z" clip-rule="evenodd" />
                 </svg>
-                <span id="nav-txt-dashboard" class="text-[10px] font-medium">Dash</span>
+                <span id="nav-txt-dashboard" class="text-[9px] font-medium truncate w-full text-center">Dash</span>
             </button>
-            <button onclick="router.navigate('fuel')" class="nav-btn w-full h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-fuel">
+            <button onclick="router.navigate('fuel')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-fuel">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                     <path fill-rule="evenodd" d="M12.97 3.97a.75.75 0 011.06 0l7.5 7.5a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 11-1.06-1.06l6.22-6.22H3a.75.75 0 010-1.5h16.19l-6.22-6.22a.75.75 0 010-1.06z" clip-rule="evenodd" />
                     <path d="M9.75 9a.75.75 0 000 1.5h.75a.75.75 0 000-1.5H9.75zM6 13.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5H6z" />
                     <path fill-rule="evenodd" d="M3.75 2.25a.75.75 0 00-.75.75v16.5c0 .414.336.75.75.75h16.5a.75.75 0 00.75-.75V3a.75.75 0 00-.75-.75H3.75zM4.5 3.75h15v15h-15v-15z" clip-rule="evenodd" />
                     <path d="M12 2.25a.75.75 0 01.75.75v2.25H18a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0118 23.25H6A2.25 2.25 0 013.75 21V7.5A2.25 2.25 0 016 5.25h5.25V3a.75.75 0 01.75-.75zM6 6.75a.75.75 0 00-.75.75v8.25h6v-9H6zm7.5 0v9h6v-8.25a.75.75 0 00-.75-.75h-5.25zM6 17.25v3.75h12v-3.75H6z" />
                 </svg>
-                <span id="nav-txt-fuel" class="text-[10px] font-medium">Fuel</span>
+                <span id="nav-txt-fuel" class="text-[9px] font-medium truncate w-full text-center">Fuel</span>
             </button>
-            <button onclick="router.navigate('maintenance')" class="nav-btn w-full h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-maintenance">
+            <button onclick="router.navigate('parking')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-parking">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                    <path fill-rule="evenodd" d="M3 2.25a.75.75 0 01.75.75v.54l1.838-.46a9.75 9.75 0 016.725.738l.108.054a8.25 8.25 0 005.58.652l3.109-.732a.75.75 0 01.917.81 47.784 47.784 0 00.005 10.337.75.75 0 01-.574.812l-3.114.733a9.75 9.75 0 01-6.594-.77l-.108-.054a8.25 8.25 0 00-5.69-.625l-2.202.55V21a.75.75 0 01-1.5 0V3A.75.75 0 013 2.25z" clip-rule="evenodd" />
+                </svg>
+                <span id="nav-txt-parking" class="text-[9px] font-medium truncate w-full text-center">Parking</span>
+            </button>
+            <button onclick="router.navigate('maintenance')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-maintenance">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                     <path d="M13.5 2a1.5 1.5 0 00-3 0v1.082a11.035 11.035 0 01-3.595 2.148l-3.22.92A2.25 2.25 0 002.25 8.25v1.5A2.25 2.25 0 004.5 12h1.734c.435 0 .838.225 1.083.587l2.308 3.461A2.25 2.25 0 0011.5 17.25h1A2.25 2.25 0 0014.373 16.048l2.308-3.461c.245-.362.648-.587 1.083-.587H19.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-1.435-2.102l-3.22-.92a11.035 11.035 0 01-3.595-2.148V2z" />
                 </svg>
-                <span id="nav-txt-service" class="text-[10px] font-medium">Service</span>
+                <span id="nav-txt-service" class="text-[9px] font-medium truncate w-full text-center">Service+</span>
             </button>
-            <button onclick="router.navigate('analytics')" class="nav-btn w-full h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-analytics">
+            <button onclick="router.navigate('analytics')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-analytics">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                     <path fill-rule="evenodd" d="M2.25 13.5a8.25 8.25 0 018.25-8.25.75.75 0 01.75.75v6.75H18a.75.75 0 01.75.75 8.25 8.25 0 01-16.5 0z" clip-rule="evenodd" />
                     <path fill-rule="evenodd" d="M12.75 3a.75.75 0 01.75-.75 8.25 8.25 0 018.25 8.25.75.75 0 01-.75.75h-7.5a.75.75 0 01-.75-.75V3z" clip-rule="evenodd" />
                 </svg>
-                <span id="nav-txt-stats" class="text-[10px] font-medium">Stats</span>
+                <span id="nav-txt-stats" class="text-[9px] font-medium truncate w-full text-center">Stats</span>
             </button>
-            <button onclick="router.navigate('settings')" class="nav-btn w-full h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-settings">
+            <button onclick="router.navigate('settings')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-settings">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                     <path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.843zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd" />
                 </svg>
-                <span id="nav-txt-settings" class="text-[10px] font-medium">Settings</span>
+                <span id="nav-txt-settings" class="text-[9px] font-medium truncate w-full text-center">Settings</span>
             </button>
         </div>
     </nav>
@@ -134,12 +140,12 @@
      */
     const translations = {
         en: {
-            nav_dash: 'Dash', nav_fuel: 'Fuel', nav_service: 'Service', nav_stats: 'Stats', nav_settings: 'Settings',
+            nav_dash: 'Dash', nav_fuel: 'Fuel', nav_parking: 'Parking', nav_service: 'Service+', nav_stats: 'Stats', nav_settings: 'Settings',
             welcome: 'Welcome back', no_vehicle: 'No Vehicle', add_vehicle: 'Add Vehicle', add_vehicle_plus: 'Add Vehicle +',
             efficiency: 'Efficiency', total_spent: 'Total Spent', last_30: 'Last 30 days', lifetime: 'Lifetime',
             quick_actions: 'Quick Actions', log_fuel: 'Add Fuel', log_service: 'Log Service',
             recent_activity: 'Recent Activity', no_logs: 'No logs yet.',
-            title_fuel: 'Fuel Log', title_service: 'Services', title_analytics: 'Analytics', title_settings: 'Settings',
+            title_fuel: 'Fuel Log', title_service: 'Service & Other', title_parking: 'Parking', title_analytics: 'Analytics', title_settings: 'Settings',
             vehicle_details: 'My Vehicles', preferences: 'Preferences', data: 'Data',
             currency: 'Currency', units: 'Units', language: 'Language',
             export_json: 'Export Data (JSON)', import_json: 'Import Data (JSON)',
@@ -172,12 +178,12 @@
             new_expiry: 'New Expiry Date'
         },
         zh: {
-            nav_dash: '首頁', nav_fuel: '加油', nav_service: '維修', nav_stats: '統計', nav_settings: '設定',
+            nav_dash: '首頁', nav_fuel: '加油', nav_parking: '停車', nav_service: '維修/其他', nav_stats: '統計', nav_settings: '設定',
             welcome: '歡迎回來', no_vehicle: '未新增車輛', add_vehicle: '新增車輛', add_vehicle_plus: '新增車輛 +',
             efficiency: '油耗表現', total_spent: '總花費', last_30: '過去 30 天', lifetime: '生涯累計',
             quick_actions: '快速功能', log_fuel: '新增加油', log_service: '新增紀錄',
             recent_activity: '近期動態', no_logs: '尚無紀錄',
-            title_fuel: '加油紀錄', title_service: '維修保養', title_analytics: '統計圖表', title_settings: '設定選項',
+            title_fuel: '加油紀錄', title_service: '維修保養', title_parking: '停車紀錄', title_analytics: '統計圖表', title_settings: '設定選項',
             vehicle_details: '我的車輛', preferences: '偏好設定', data: '資料管理',
             currency: '貨幣單位', units: '度量單位', language: '語言 (Language)',
             export_json: '匯出資料 (JSON)', import_json: '匯入資料 (JSON)',
@@ -458,6 +464,7 @@
 
             document.getElementById('nav-txt-dashboard').textContent = t('nav_dash');
             document.getElementById('nav-txt-fuel').textContent = t('nav_fuel');
+            document.getElementById('nav-txt-parking').textContent = t('nav_parking');
             document.getElementById('nav-txt-service').textContent = t('nav_service');
             document.getElementById('nav-txt-stats').textContent = t('nav_stats');
             document.getElementById('nav-txt-settings').textContent = t('nav_settings');
@@ -469,6 +476,7 @@
             switch(route) {
                 case 'dashboard': ui.renderDashboard(main); break;
                 case 'fuel': ui.renderFuel(main); break;
+                case 'parking': ui.renderParking(main); break;
                 case 'maintenance': ui.renderMaintenance(main); break;
                 case 'analytics': ui.renderAnalytics(main); break;
                 case 'settings': ui.renderSettings(main); break;
@@ -724,10 +732,45 @@
             `;
         },
 
+        renderParking(container) {
+            const activeCar = store.getActiveVehicle();
+            if(!activeCar) return this.renderNoCar(container);
+            // Filter logs for type === 'parking'
+            const logs = store.getLogs(activeCar.id, 'parking');
+
+            container.innerHTML = `
+                <div class="pt-[max(20px,env(safe-area-inset-top))] px-6 pb-4 flex justify-between items-end bg-white border-b border-slate-100 sticky top-0 z-40">
+                    <h1 class="text-3xl font-bold text-slate-800">${t('title_parking')}</h1>
+                    <button onclick="ui.openAddService(null, 'Parking')" class="bg-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md">+</button>
+                </div>
+                <div class="p-4 space-y-3">
+                    ${logs.length ? logs.map(log => {
+                        return `
+                        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative">
+                            <div class="flex gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-lg">🅿️</div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between">
+                                        <h4 class="font-bold text-slate-800 capitalize">${log.note || t('type_parking')}</h4>
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-slate-800">${utils.formatCurrency(log.cost)}</span>
+                                            <button onclick="ui.openAddService('${log.id}')" class="text-slate-300 hover:text-teal-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-1">${new Date(log.date).toLocaleDateString()} • ${log.location || t('location')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `}).join('') : `<div class="text-center py-10 text-slate-400">${t('no_logs')}</div>`}
+                </div>
+            `;
+        },
+
         renderMaintenance(container) {
             const activeCar = store.getActiveVehicle();
             if(!activeCar) return this.renderNoCar(container);
-            const logs = store.getLogs(activeCar.id).filter(l => l.type !== 'fuel');
+            // Show everything EXCEPT fuel and parking
+            const logs = store.getLogs(activeCar.id).filter(l => l.type !== 'fuel' && l.type !== 'parking');
 
             container.innerHTML = `
                 <div class="pt-[max(20px,env(safe-area-inset-top))] px-6 pb-4 flex justify-between items-end bg-white border-b border-slate-100 sticky top-0 z-40">
@@ -737,7 +780,6 @@
                 <div class="p-4 space-y-3">
                     ${logs.length ? logs.map(log => {
                         let icon = '🔧', colorClass = 'bg-orange-100 text-orange-600', title = t('type_maint');
-                        if(log.type === 'parking') { icon = '🅿️'; colorClass = 'bg-blue-100 text-blue-600'; title = t('type_parking'); }
                         if(log.type === 'license') { icon = '📄'; colorClass = 'bg-purple-100 text-purple-600'; title = t('type_license'); }
                         if(log.type === 'insurance') { icon = '🛡️'; colorClass = 'bg-indigo-100 text-indigo-600'; title = t('type_insurance'); }
                         if(log.type === 'registration') { icon = '📋'; colorClass = 'bg-pink-100 text-pink-600'; title = t('type_registration'); }
@@ -906,7 +948,7 @@
                             </div>
                         </div>
                     </section>
-                    <div class="text-center text-xs text-slate-300 mt-8">FuelMate v1.3.4<br>Offline PWA</div>
+                    <div class="text-center text-xs text-slate-300 mt-8">FuelMate v1.4.0<br>Offline PWA</div>
                 </div>
             `;
         },
@@ -1043,17 +1085,27 @@
             else if (field === 'cost') { if (vol > 0) priceInput.value = (cost / vol).toFixed(2); }
         },
 
-        openAddService(id = null) {
+        openAddService(id = null, defaultType = 'Maintenance') {
             const activeCar = store.getActiveVehicle();
             if (!activeCar) return this.openAddVehicle();
             let log = { type: 'service', date: new Date().toISOString().split('T')[0], cost: '', note: '', location: '', expiryDate: '' };
             let title = t('log_service'), btnText = t('save_entry'), hiddenId = '', deleteBtn = '';
+            
+            // Default selection logic
+            let selectedType = defaultType;
 
             if (id) {
                 log = store.getLog(id);
                 log.date = new Date(log.date).toISOString().split('T')[0];
                 title = t('edit_record'); btnText = t('save_changes'); hiddenId = `<input type="hidden" name="id" value="${id}">`;
                 deleteBtn = `<button type="button" onclick="ui.deleteLogAndClose('${id}')" class="flex-1 bg-red-50 text-red-500 font-bold py-4 rounded-xl">${t('delete')}</button>`;
+                
+                // Map stored type to select value
+                if (log.type === 'parking') selectedType = 'Parking';
+                else if (log.type === 'license') selectedType = 'License';
+                else if (log.type === 'insurance') selectedType = 'Insurance';
+                else if (log.type === 'registration') selectedType = 'Registration';
+                else selectedType = 'Maintenance';
             }
 
             document.getElementById('modal-content').innerHTML = `
@@ -1063,11 +1115,11 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('service_type')}</label>
                         <select name="subType" id="service-type-select" onchange="ui.toggleExpiryField()" class="w-full bg-slate-100 p-3 rounded-xl outline-none">
-                            <option value="Maintenance" ${log.type === 'service' ? 'selected' : ''}>${t('type_maint')}</option>
-                            <option value="Parking" ${log.type === 'parking' ? 'selected' : ''}>${t('type_parking')}</option>
-                            <option value="License" ${log.type === 'license' ? 'selected' : ''}>${t('type_license')}</option>
-                            <option value="Insurance" ${log.type === 'insurance' ? 'selected' : ''}>${t('type_insurance')}</option>
-                            <option value="Registration" ${log.type === 'registration' ? 'selected' : ''}>${t('type_registration')}</option>
+                            <option value="Maintenance" ${selectedType === 'Maintenance' ? 'selected' : ''}>${t('type_maint')}</option>
+                            <option value="Parking" ${selectedType === 'Parking' ? 'selected' : ''}>${t('type_parking')}</option>
+                            <option value="License" ${selectedType === 'License' ? 'selected' : ''}>${t('type_license')}</option>
+                            <option value="Insurance" ${selectedType === 'Insurance' ? 'selected' : ''}>${t('type_insurance')}</option>
+                            <option value="Registration" ${selectedType === 'Registration' ? 'selected' : ''}>${t('type_registration')}</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -1144,11 +1196,14 @@
             const subType = fd.get('subType');
             
             let finalType = routeType;
+            // Because we use openAddService for both Service and Parking pages, 
+            // we check the dropdown value (subType) to determine the final type
             if (subType === 'Parking') finalType = 'parking';
-            if (subType === 'Maintenance') finalType = 'service';
-            if (subType === 'License') finalType = 'license';
-            if (subType === 'Insurance') finalType = 'insurance';
-            if (subType === 'Registration') finalType = 'registration';
+            else if (subType === 'Maintenance') finalType = 'service';
+            else if (subType === 'License') finalType = 'license';
+            else if (subType === 'Insurance') finalType = 'insurance';
+            else if (subType === 'Registration') finalType = 'registration';
+            
             if (routeType === 'fuel') finalType = 'fuel';
 
             // For document types, we don't need Note and Location
@@ -1164,7 +1219,12 @@
             };
             
             if (id) { logData.id = id; store.updateLog(logData); } else { store.addLog(logData); }
-            this.closeModal(); router.navigate(routeType === 'fuel' ? 'fuel' : 'maintenance');
+            this.closeModal(); 
+            
+            // Redirect back to appropriate page
+            if (finalType === 'fuel') router.navigate('fuel');
+            else if (finalType === 'parking') router.navigate('parking');
+            else router.navigate('maintenance');
         },
 
         deleteLogAndClose(id) {
