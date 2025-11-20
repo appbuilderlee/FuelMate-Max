@@ -1,0 +1,1421 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>FuelMate</title>
+    
+    <!-- iOS PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FuelMate">
+    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAYAAADnRuK4AAAACXBIWXMAAA7DAAAOwwHHb6hkAAADbklEQVR4nO3dy29SURwH8O9XoaVIIbUVSCkEItTExRCNG2NijC504864cWfc+B9044640Y0xJsTEGF8RU6KBCAoSX1B5FBCQ8izl0dM40Qq9fWc6v9/kk5zcu8/53jMz53zPPRQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIB/S6vV2jGZTL4YGxt7bLVaBwF/k81m60qlUj+VSr0cHR29nE6nXwH+JCMiV1dXd9lsNqfT6RwD/E2xWOxLJBJ3c7ncQ6vV+gbwB83n82eWl5cf+f3+0wB/k8lkHszMzFxsd/QJ6C86nc4zbrf7IsDftFqtXzY3N/flcrkXAP9D2+32zvn5+fNcLncJ4G8qlUrPi8XiXbPZ/ALwB01E5Orq6i6HwzEO8DflcvlOMpm8n0gkfH19fX91Ot2f+Xz+g4iI1Wp1i4h4vV7H6OjoWZvN5gT4i4rF4l0R+bKwsHAvGo0+FhHxeDynbDbbhM1mcwL8Rblc7qGIPFpaWrqztLT0SESEx+Nx2O12J8Bf1Gq1vopIJBKJ3AuHww9ERDwej91ut48C/EUi8kFE5O7dO7ciocjD8Ph4wOVynQD4k0ql0nMRkUQicW9tbe2RiAiv1/t/g/wBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwH9hZGQk6HA4xgD+plQq9TwWiz1oNptfAP6g9XTaLpfrIsDflEqlXzY3N/flcrlXAH/QvF7vGbfbfRHgbyqVys/Nzc1fAJ9gMpm8s7y8/Mjv958G+JtMJvNgZmYmBvAJbrf7jM1mcwL8TbFY7EskEndzudxDq9X6BvAHzefzZ05OTp7lcrkLAH+TyWQezMzMXGw39AroLzqdztNut/sCwN+0Wq1fNjc39+VyuRcA/0P7/f7ZxcXF81wudwngbyqVSs/j8fids7OzLwB/0ERErq6u7nI6nWMHBwd9fX1/dTrdn/l8/oOIiNVqdYuIeL1ex+jo6FmbzeYE+IuKxeJdEfmysLBwLxqNPhYR8Xg8pmw224TNZnMC/EW5XO6hiDxaWlq6s7S09EhEhMfjMdrtdifAX9Rqtb6KSCQSidwLh8MPREQ8Ho/dbrefAvgLEfmQz+c/iIjcu3fvvwdI5GF4fDzgcrkAf5J/A/W/f/0yXw2nAAAAAElFTkSuQmCC">
+
+    <!-- Libraries (Tailwind + Chart.js) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Config for Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0d9488', // teal-600
+                        secondary: '#0f172a', // slate-900
+                        accent: '#38bdf8', // sky-400
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .ios-scroll {
+            -webkit-overflow-scrolling: touch;
+        }
+        .pb-safe {
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+        }
+        .pt-safe {
+            padding-top: max(1rem, env(safe-area-inset-top));
+        }
+        /* Hide scrollbar for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .card-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        }
+        .slide-up {
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- MAIN CONTENT AREA -->
+    <main id="main-content" class="flex-1 overflow-y-auto ios-scroll pb-safe relative">
+        <!-- Dynamic Content Loaded Here -->
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] z-50">
+        <div class="flex justify-around items-center h-16">
+            <button onclick="router.navigate('dashboard')" class="nav-btn w-full h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-dashboard">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                    <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h2.25a3 3 0 013 3v2.25a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm9.75 0a3 3 0 013-3H18a3 3 0 013 3v2.25a3 3 0 01-3 3h-2.25a3 3 0 01-3-3V6zM3 15.75a3 3 0 013-3h2.25a3 3 0 013 3V18a3 3 0 01-3 3H6a3 3 0 01-3-3v-2.25zm9.75 0a3 3 0 013-3H18a3 3 0 013 3V18a3 3 0 01-3 3h-2.25a3 3 0 01-3-3v-2.25z" clip-rule="evenodd" />
+                </svg>
+                <span id="nav-txt-dashboard" class="text-[10px] font-medium">Dash</span>
+            </button>
+            <button onclick="router.navigate('fuel')" class="nav-btn w-full h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-fuel">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                    <path fill-rule="evenodd" d="M12.97 3.97a.75.75 0 011.06 0l7.5 7.5a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 11-1.06-1.06l6.22-6.22H3a.75.75 0 010-1.5h16.19l-6.22-6.22a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                    <path d="M9.75 9a.75.75 0 000 1.5h.75a.75.75 0 000-1.5H9.75zM6 13.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5H6z" />
+                    <path fill-rule="evenodd" d="M3.75 2.25a.75.75 0 00-.75.75v16.5c0 .414.336.75.75.75h16.5a.75.75 0 00.75-.75V3a.75.75 0 00-.75-.75H3.75zM4.5 3.75h15v15h-15v-15z" clip-rule="evenodd" />
+                    <path d="M12 2.25a.75.75 0 01.75.75v2.25H18a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0118 23.25H6A2.25 2.25 0 013.75 21V7.5A2.25 2.25 0 016 5.25h5.25V3a.75.75 0 01.75-.75zM6 6.75a.75.75 0 00-.75.75v8.25h6v-9H6zm7.5 0v9h6v-8.25a.75.75 0 00-.75-.75h-5.25zM6 17.25v3.75h12v-3.75H6z" />
+                </svg>
+                <span id="nav-txt-fuel" class="text-[10px] font-medium">Fuel</span>
+            </button>
+            <button onclick="router.navigate('maintenance')" class="nav-btn w-full h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-maintenance">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                    <path d="M13.5 2a1.5 1.5 0 00-3 0v1.082a11.035 11.035 0 01-3.595 2.148l-3.22.92A2.25 2.25 0 002.25 8.25v1.5A2.25 2.25 0 004.5 12h1.734c.435 0 .838.225 1.083.587l2.308 3.461A2.25 2.25 0 0011.5 17.25h1A2.25 2.25 0 0014.373 16.048l2.308-3.461c.245-.362.648-.587 1.083-.587H19.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-1.435-2.102l-3.22-.92a11.035 11.035 0 01-3.595-2.148V2z" />
+                </svg>
+                <span id="nav-txt-service" class="text-[10px] font-medium">Service</span>
+            </button>
+            <button onclick="router.navigate('analytics')" class="nav-btn w-full h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-analytics">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                    <path fill-rule="evenodd" d="M2.25 13.5a8.25 8.25 0 018.25-8.25.75.75 0 01.75.75v6.75H18a.75.75 0 01.75.75 8.25 8.25 0 01-16.5 0z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M12.75 3a.75.75 0 01.75-.75 8.25 8.25 0 018.25 8.25.75.75 0 01-.75.75h-7.5a.75.75 0 01-.75-.75V3z" clip-rule="evenodd" />
+                </svg>
+                <span id="nav-txt-stats" class="text-[10px] font-medium">Stats</span>
+            </button>
+            <button onclick="router.navigate('settings')" class="nav-btn w-full h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-settings">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                    <path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.843zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd" />
+                </svg>
+                <span id="nav-txt-settings" class="text-[10px] font-medium">Settings</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- OVERLAYS / MODALS -->
+    <div id="modal-container" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="ui.closeModal()"></div>
+        <div id="modal-content" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 pb-10 slide-up max-h-[90vh] overflow-y-auto">
+            <!-- Modal Body -->
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+    /**
+     * TRANSLATIONS
+     */
+    const translations = {
+        en: {
+            nav_dash: 'Dash', nav_fuel: 'Fuel', nav_service: 'Service', nav_stats: 'Stats', nav_settings: 'Settings',
+            welcome: 'Welcome back', no_vehicle: 'No Vehicle', add_vehicle: 'Add Vehicle', add_vehicle_plus: 'Add Vehicle +',
+            efficiency: 'Efficiency', total_spent: 'Total Spent', last_30: 'Last 30 days', lifetime: 'Lifetime',
+            quick_actions: 'Quick Actions', log_fuel: 'Add Fuel', log_service: 'Log Service',
+            recent_activity: 'Recent Activity', no_logs: 'No logs yet.',
+            title_fuel: 'Fuel Log', title_service: 'Services', title_analytics: 'Analytics', title_settings: 'Settings',
+            vehicle_details: 'My Vehicles', preferences: 'Preferences', data: 'Data',
+            currency: 'Currency', units: 'Units', language: 'Language',
+            export_json: 'Export Data (JSON)', import_json: 'Import Data (JSON)',
+            import_success: 'Data imported successfully!', import_error: 'Invalid file format.',
+            make: 'Make', model: 'Model', year: 'Year', odometer: 'Odometer',
+            save_vehicle: 'Save Vehicle', save_log: 'Save Log', save_entry: 'Save Entry',
+            date: 'Date', cost: 'Total Cost', volume: 'Volume', location: 'Location',
+            service_type: 'Service Type', note: 'Note / Description',
+            type_maint: 'Maintenance / Repair', type_parking: 'Parking',
+            confirm_delete: 'Are you sure you want to delete this record?',
+            unit_metric: 'Metric (L, km)', unit_imperial: 'Imperial (Gal, mi)',
+            fuel: 'Fuel', service: 'Service', parking: 'Parking',
+            expense_breakdown: 'Expense Breakdown', fuel_eff_trend: 'Fuel Efficiency Trend',
+            vehicle_placeholder_make: 'Toyota', vehicle_placeholder_model: 'Camry',
+            log_placeholder_note: 'Oil Change, Tire Rotation...', location_placeholder: 'Station Name',
+            no_vehicle_desc: 'Add a vehicle to start tracking fuel and maintenance.',
+            price_per_unit_l: 'Price per Liter', price_per_unit_g: 'Price per Gallon',
+            prev_dist: 'Distance', waiting_data: 'More data needed',
+            range_month: 'This Month', range_year: 'This Year', range_all: 'All Time',
+            cost_km: 'Cost / km', total_dist: 'Total Dist',
+            edit_vehicle: 'Edit Vehicle', edit_record: 'Edit Record',
+            save_changes: 'Save Changes', cancel: 'Cancel', delete: 'Delete',
+            // New translations for Reminders
+            license_exp: 'License Expiry', license_cost: 'Renewal Cost',
+            insurance_exp: 'Insurance Expiry', insurance_cost: 'Renewal Cost',
+            reminders: 'Reminders', expired: 'Expired', days_left: 'days left',
+            fixed_costs: 'Annual Fixed Costs', section_fixed: 'Fixed Costs & Expiry'
+        },
+        zh: {
+            nav_dash: '首頁', nav_fuel: '加油', nav_service: '維修', nav_stats: '統計', nav_settings: '設定',
+            welcome: '歡迎回來', no_vehicle: '未新增車輛', add_vehicle: '新增車輛', add_vehicle_plus: '新增車輛 +',
+            efficiency: '油耗表現', total_spent: '總花費', last_30: '過去 30 天', lifetime: '生涯累計',
+            quick_actions: '快速功能', log_fuel: '新增加油', log_service: '新增紀錄',
+            recent_activity: '近期動態', no_logs: '尚無紀錄',
+            title_fuel: '加油紀錄', title_service: '維修保養', title_analytics: '統計圖表', title_settings: '設定選項',
+            vehicle_details: '我的車輛', preferences: '偏好設定', data: '資料管理',
+            currency: '貨幣單位', units: '度量單位', language: '語言 (Language)',
+            export_json: '匯出資料 (JSON)', import_json: '匯入資料 (JSON)',
+            import_success: '資料匯入成功！', import_error: '檔案格式錯誤。',
+            make: '廠牌', model: '車型', year: '年份', odometer: '里程數',
+            save_vehicle: '儲存車輛', save_log: '儲存紀錄', save_entry: '儲存項目',
+            date: '日期', cost: '總金額', volume: '油量', location: '地點',
+            service_type: '類別', note: '備註 / 描述',
+            type_maint: '維修保養', type_parking: '停車費',
+            confirm_delete: '確定刪除此項目？',
+            unit_metric: '公制 (公升, 公里)', unit_imperial: '英制 (加侖, 英里)',
+            fuel: '加油', service: '維修', parking: '停車',
+            expense_breakdown: '花費分佈', fuel_eff_trend: '油耗趨勢',
+            vehicle_placeholder_make: 'Toyota', vehicle_placeholder_model: 'Corolla',
+            log_placeholder_note: '換機油、輪胎對調...', location_placeholder: '加油站名稱',
+            no_vehicle_desc: '請新增車輛以開始追蹤油耗與保養紀錄。',
+            price_per_unit_l: '單價（每公升）', price_per_unit_g: '單價（每加侖）',
+            prev_dist: '行駛距離', waiting_data: '等待更多記錄',
+            range_month: '本月', range_year: '今年', range_all: '全部',
+            cost_km: '每公里成本', total_dist: '總里程',
+            edit_vehicle: '編輯車輛', edit_record: '編輯紀錄',
+            save_changes: '保存修改', cancel: '取消', delete: '刪除',
+            // New translations for Reminders
+            license_exp: '車牌到期日期', license_cost: '車牌續期費用',
+            insurance_exp: '保險到期日期', insurance_cost: '保險續期費用',
+            reminders: '提醒通知', expired: '已過期', days_left: '天後到期',
+            fixed_costs: '年度固定支出', section_fixed: '車牌與保險'
+        }
+    };
+
+    /**
+     * DATA STORE & UTILS
+     */
+    const store = {
+        dashboardFilter: 'month', // 'month' | 'year' | 'all'
+        data: {
+            vehicles: [],
+            logs: [], // Array of { id, vehicleId, type: 'fuel'|'service'|'parking', date, odometer, cost, ...details }
+            settings: {
+                activeVehicleId: null,
+                unitSystem: 'metric', // 'metric' (L, km) or 'imperial' (Gal, mi)
+                currency: '$',
+                language: 'en' // 'en' or 'zh'
+            }
+        },
+        
+        init() {
+            const saved = localStorage.getItem('fuelmate_data');
+            if (saved) {
+                this.data = JSON.parse(saved);
+            }
+            // Set default active vehicle if needed
+            if (this.data.vehicles.length > 0 && !this.data.settings.activeVehicleId) {
+                this.data.settings.activeVehicleId = this.data.vehicles[0].id;
+                this.save();
+            }
+            // Ensure language default exists
+            if (!this.data.settings.language) {
+                this.data.settings.language = 'en';
+                this.save();
+            }
+        },
+
+        save() {
+            localStorage.setItem('fuelmate_data', JSON.stringify(this.data));
+        },
+
+        addVehicle(vehicle) {
+            vehicle.id = Date.now().toString();
+            this.data.vehicles.push(vehicle);
+            if (!this.data.settings.activeVehicleId) {
+                this.data.settings.activeVehicleId = vehicle.id;
+            }
+            this.save();
+            return vehicle;
+        },
+
+        updateVehicle(updatedVehicle) {
+            const index = this.data.vehicles.findIndex(v => v.id === updatedVehicle.id);
+            if (index !== -1) {
+                this.data.vehicles[index] = { ...this.data.vehicles[index], ...updatedVehicle };
+                this.save();
+            }
+        },
+
+        addLog(log) {
+            log.id = Date.now().toString();
+            // Update vehicle odometer if this log has higher mileage
+            const v = this.getVehicle(log.vehicleId);
+            if (v && log.odometer > v.currentOdometer) {
+                v.currentOdometer = parseInt(log.odometer);
+            }
+            this.data.logs.push(log);
+            // Sort logs by date desc
+            this.data.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+            this.save();
+        },
+
+        updateLog(updatedLog) {
+            const index = this.data.logs.findIndex(l => l.id === updatedLog.id);
+            if (index !== -1) {
+                this.data.logs[index] = updatedLog;
+                // Update vehicle odometer if needed
+                const v = this.getVehicle(updatedLog.vehicleId);
+                if (v && updatedLog.odometer > v.currentOdometer) {
+                    v.currentOdometer = parseInt(updatedLog.odometer);
+                }
+                // Re-sort logs
+                this.data.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                this.save();
+            }
+        },
+
+        deleteLog(id) {
+            this.data.logs = this.data.logs.filter(l => l.id !== id);
+            this.save();
+        },
+
+        getLog(id) {
+            return this.data.logs.find(l => l.id === id);
+        },
+        
+        getActiveVehicle() {
+            return this.data.vehicles.find(v => v.id === this.data.settings.activeVehicleId);
+        },
+
+        getVehicle(id) {
+            return this.data.vehicles.find(v => v.id === id);
+        },
+
+        getLogs(vehicleId, type = null) {
+            return this.data.logs.filter(l => {
+                if (l.vehicleId !== vehicleId) return false;
+                if (type && l.type !== type) return false;
+                return true;
+            });
+        },
+
+        exportData() {
+            const str = JSON.stringify(this.data);
+            const blob = new Blob([str], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fuelmate_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        },
+
+        importData(jsonStr) {
+            try {
+                const data = JSON.parse(jsonStr);
+                // Basic validation
+                if (!Array.isArray(data.vehicles) || !Array.isArray(data.logs) || !data.settings) {
+                    return false;
+                }
+                this.data = data;
+                this.save();
+                return true;
+            } catch (e) {
+                console.error(e);
+                return false;
+            }
+        }
+    };
+
+    const utils = {
+        t(key) {
+            const lang = store.data.settings.language || 'en';
+            return translations[lang][key] || key;
+        },
+        formatCurrency(amount) {
+            const symbol = store.data.settings.currency;
+            return `${symbol}${parseFloat(amount || 0).toFixed(2)}`;
+        },
+        formatDist(dist) {
+            const unit = store.data.settings.unitSystem === 'metric' ? 'km' : 'mi';
+            return `${parseInt(dist || 0).toLocaleString()} ${unit}`;
+        },
+        formatFuel(vol) {
+            const unit = store.data.settings.unitSystem === 'metric' ? 'L' : 'gal';
+            return `${parseFloat(vol || 0).toFixed(1)} ${unit}`;
+        },
+        calculateStats(vehicleId, timeRange = 'month') {
+            // 1. Determine Date Range
+            const now = new Date();
+            let startDate = new Date(0); // Default ALL
+            
+            if (timeRange === 'month') {
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            } else if (timeRange === 'year') {
+                startDate = new Date(now.getFullYear(), 0, 1);
+            }
+
+            // 2. Filter Logs for Total Cost (Fuel + Service + Parking)
+            const allLogs = store.getLogs(vehicleId).filter(l => new Date(l.date) >= startDate);
+            const totalCost = allLogs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
+
+            // 3. Filter Logs for Efficiency & Distance (Fuel Only)
+            // We sort by odometer asc to find range
+            const fuelLogs = allLogs.filter(l => l.type === 'fuel').sort((a, b) => a.odometer - b.odometer);
+
+            let totalDist = 0;
+            let totalVol = 0;
+
+            if (fuelLogs.length > 1) {
+                totalDist = fuelLogs[fuelLogs.length - 1].odometer - fuelLogs[0].odometer;
+                totalVol = fuelLogs.reduce((sum, l) => sum + parseFloat(l.liters), 0); 
+            }
+
+            let efficiency = '--';
+            let costPerKm = '--';
+
+            if (totalDist > 0 && totalVol > 0) {
+                if (store.data.settings.unitSystem === 'metric') {
+                    // L/100km
+                    const l100 = (totalVol / totalDist) * 100;
+                    efficiency = `${l100.toFixed(1)} L/100km`;
+                    costPerKm = `${store.data.settings.currency}${(totalCost / totalDist).toFixed(2)}/km`;
+                } else {
+                    // MPG
+                    const mpg = totalDist / totalVol; 
+                    efficiency = `${mpg.toFixed(1)} MPG`;
+                    costPerKm = `${store.data.settings.currency}${(totalCost / totalDist).toFixed(2)}/mi`;
+                }
+            }
+
+            return { efficiency, costPerKm, totalCost, totalDist };
+        },
+        async getCurrentLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) resolve(null);
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                    (err) => resolve(null)
+                );
+            });
+        },
+        getDaysLeft(dateStr) {
+            if (!dateStr) return null;
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const target = new Date(dateStr);
+            target.setHours(0,0,0,0);
+            const diffTime = target - today;
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+    };
+
+    // Alias for translation
+    const t = utils.t;
+
+    /**
+     * ROUTER & UI RENDERER
+     */
+    const router = {
+        current: 'dashboard',
+        navigate(route) {
+            this.current = route;
+            
+            // Update Nav Icons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-primary');
+                btn.classList.add('text-slate-400');
+            });
+            const activeBtn = document.getElementById(`nav-${route}`);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-slate-400');
+                activeBtn.classList.add('text-primary');
+            }
+
+            // Update Nav Text (Language Support)
+            document.getElementById('nav-txt-dashboard').textContent = t('nav_dash');
+            document.getElementById('nav-txt-fuel').textContent = t('nav_fuel');
+            document.getElementById('nav-txt-service').textContent = t('nav_service');
+            document.getElementById('nav-txt-stats').textContent = t('nav_stats');
+            document.getElementById('nav-txt-settings').textContent = t('nav_settings');
+
+            // Render View
+            const main = document.getElementById('main-content');
+            main.innerHTML = ''; // Clear
+            
+            switch(route) {
+                case 'dashboard': ui.renderDashboard(main); break;
+                case 'fuel': ui.renderFuel(main); break;
+                case 'maintenance': ui.renderMaintenance(main); break;
+                case 'analytics': ui.renderAnalytics(main); break;
+                case 'settings': ui.renderSettings(main); break;
+            }
+        }
+    };
+
+    const ui = {
+        setDashFilter(filter) {
+            store.dashboardFilter = filter;
+            this.renderDashboard(document.getElementById('main-content'));
+        },
+        renderDashboard(container) {
+            const activeCar = store.getActiveVehicle();
+            
+            // Header
+            let html = `
+                <div class="relative bg-gradient-to-br from-teal-500 to-blue-600 text-white pt-safe pb-16 rounded-b-[2.5rem] shadow-lg">
+                    <div class="px-6 mb-6 flex justify-between items-center">
+                        <div>
+                            <p class="text-teal-100 text-sm font-medium">${t('welcome')}</p>
+                            <h1 class="text-2xl font-bold flex items-center gap-2" onclick="router.navigate('settings')">
+                                ${activeCar ? `${activeCar.year} ${activeCar.model}` : t('no_vehicle')}
+                                <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </h1>
+                        </div>
+                        <div class="bg-white/20 p-2 rounded-full backdrop-blur-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        </div>
+                    </div>
+            `;
+
+            if (!activeCar) {
+                html += `
+                    <div class="px-6 pb-6">
+                        <button onclick="ui.openAddVehicle()" class="bg-white text-teal-600 px-6 py-2 rounded-full font-bold shadow-md hover:bg-teal-50 transition">${t('add_vehicle_plus')}</button>
+                    </div>
+                </div>`;
+                container.innerHTML = html;
+                return;
+            }
+
+            const stats = utils.calculateStats(activeCar.id, store.dashboardFilter);
+
+            // Filter Pills
+            html += `
+                </div>
+                
+                <!-- Time Range Filter -->
+                <div class="flex justify-center gap-2 mb-4 px-6 -mt-14 relative z-10">
+                    <button onclick="ui.setDashFilter('month')" class="px-4 py-1.5 rounded-full text-xs font-bold transition shadow-sm ${store.dashboardFilter === 'month' ? 'bg-white text-teal-600' : 'bg-white/30 text-white backdrop-blur-md hover:bg-white/40'}">${t('range_month')}</button>
+                    <button onclick="ui.setDashFilter('year')" class="px-4 py-1.5 rounded-full text-xs font-bold transition shadow-sm ${store.dashboardFilter === 'year' ? 'bg-white text-teal-600' : 'bg-white/30 text-white backdrop-blur-md hover:bg-white/40'}">${t('range_year')}</button>
+                    <button onclick="ui.setDashFilter('all')" class="px-4 py-1.5 rounded-full text-xs font-bold transition shadow-sm ${store.dashboardFilter === 'all' ? 'bg-white text-teal-600' : 'bg-white/30 text-white backdrop-blur-md hover:bg-white/40'}">${t('range_all')}</button>
+                </div>
+
+                <!-- Reminders Section -->
+                ${this.renderReminders(activeCar)}
+
+                <!-- 2x2 Stats Grid -->
+                <div class="grid grid-cols-2 gap-3 px-4 mb-8">
+                    <!-- 1. Efficiency -->
+                    <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('efficiency')}</p>
+                        <p class="text-xl font-bold text-teal-600 mt-1">${stats.efficiency}</p>
+                    </div>
+                    <!-- 2. Cost / Km -->
+                    <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('cost_km')}</p>
+                        <p class="text-xl font-bold text-blue-500 mt-1">${stats.costPerKm}</p>
+                    </div>
+                    <!-- 3. Total Spent -->
+                    <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('total_spent')}</p>
+                        <p class="text-xl font-bold text-slate-800 mt-1">${utils.formatCurrency(stats.totalCost)}</p>
+                    </div>
+                    <!-- 4. Total Distance -->
+                    <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('total_dist')}</p>
+                        <p class="text-xl font-bold text-slate-800 mt-1">${utils.formatDist(stats.totalDist)}</p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="px-6 mb-8">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">${t('quick_actions')}</h3>
+                    <div class="flex gap-4">
+                        <button onclick="ui.openAddFuel()" class="flex-1 bg-teal-500 text-white py-4 rounded-2xl shadow-lg shadow-teal-500/30 flex flex-col items-center gap-2 active:scale-95 transition">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"></path></svg>
+                            <span class="font-bold text-sm">${t('log_fuel')}</span>
+                        </button>
+                        <button onclick="ui.openAddService()" class="flex-1 bg-white text-slate-700 border border-slate-100 py-4 rounded-2xl shadow-sm flex flex-col items-center gap-2 active:scale-95 transition">
+                            <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span class="font-bold text-sm">${t('log_service')}</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="px-6 pb-24">
+                     <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">${t('recent_activity')}</h3>
+                     ${this.renderRecentList(activeCar.id)}
+                </div>
+            `;
+            container.innerHTML = html;
+        },
+
+        renderReminders(car) {
+            const licDays = utils.getDaysLeft(car.licenseDate);
+            const insDays = utils.getDaysLeft(car.insuranceDate);
+            
+            if (licDays === null && insDays === null) return '';
+
+            const items = [];
+            
+            if (licDays !== null) {
+                items.push({
+                    type: t('license_exp'),
+                    days: licDays,
+                    cost: car.licenseCost,
+                    icon: '📄'
+                });
+            }
+            if (insDays !== null) {
+                items.push({
+                    type: t('insurance_exp'),
+                    days: insDays,
+                    cost: car.insuranceCost,
+                    icon: '🛡️'
+                });
+            }
+
+            // Sort by urgency (days ascending)
+            items.sort((a, b) => a.days - b.days);
+
+            let html = `<div class="px-6 mb-6"><div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                <div class="bg-slate-50 px-4 py-2 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        ${t('reminders')}
+                    </h3>
+                </div>
+                <div class="p-2">`;
+
+            items.forEach(item => {
+                let bgClass, textClass, statusText;
+                
+                if (item.days < 0) {
+                    bgClass = 'bg-red-50 border-red-100';
+                    textClass = 'text-red-600';
+                    statusText = t('expired');
+                } else if (item.days <= 15) {
+                    bgClass = 'bg-red-50 border-red-100';
+                    textClass = 'text-red-600';
+                    statusText = `${item.days} ${t('days_left')}`;
+                } else if (item.days <= 30) {
+                    bgClass = 'bg-yellow-50 border-yellow-100';
+                    textClass = 'text-yellow-600';
+                    statusText = `${item.days} ${t('days_left')}`;
+                } else {
+                    bgClass = 'bg-emerald-50 border-emerald-100';
+                    textClass = 'text-emerald-600';
+                    statusText = `${item.days} ${t('days_left')}`;
+                }
+
+                html += `
+                    <div onclick="ui.openAddVehicle('${car.id}')" class="${bgClass} border rounded-xl p-3 mb-2 last:mb-0 flex items-center justify-between transition active:opacity-70 cursor-pointer">
+                        <div class="flex items-center gap-3">
+                            <div class="text-xl">${item.icon}</div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">${item.type}</p>
+                                <p class="text-[10px] text-slate-500">${utils.formatCurrency(item.cost)}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-bold ${textClass} px-2 py-1 rounded-md bg-white/60">
+                                ${statusText}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div></div></div>`;
+            return html;
+        },
+
+        renderRecentList(vid) {
+            const logs = store.getLogs(vid).slice(0, 3);
+            if (logs.length === 0) return `<p class="text-slate-400 text-sm italic">${t('no_logs')}</p>`;
+            
+            return logs.map(log => {
+                let icon = '';
+                let color = '';
+                let typeLabel = '';
+                let editFn = '';
+
+                if(log.type === 'fuel') { 
+                    icon = '⛽️'; color='bg-teal-50 text-teal-600'; typeLabel = t('fuel'); 
+                    editFn = `ui.openAddFuel('${log.id}')`;
+                }
+                if(log.type === 'service') { 
+                    icon = '🔧'; color='bg-orange-50 text-orange-600'; typeLabel = t('service'); 
+                    editFn = `ui.openAddService('${log.id}')`;
+                }
+                if(log.type === 'parking') { 
+                    icon = '🅿️'; color='bg-blue-50 text-blue-600'; typeLabel = t('parking'); 
+                    editFn = `ui.openAddService('${log.id}')`;
+                }
+
+                return `
+                <div class="bg-white p-4 rounded-xl border border-slate-100 mb-3 flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full ${color} flex items-center justify-center text-lg">${icon}</div>
+                        <div>
+                            <p class="font-bold text-slate-800 capitalize">${typeLabel}</p>
+                            <p class="text-xs text-slate-400">${new Date(log.date).toLocaleDateString()} • ${utils.formatDist(log.odometer)}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <p class="font-bold text-slate-800">${utils.formatCurrency(log.cost)}</p>
+                        <button onclick="${editFn}" class="text-slate-300 hover:text-teal-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        },
+
+        renderFuel(container) {
+            const activeCar = store.getActiveVehicle();
+            if(!activeCar) return this.renderNoCar(container);
+
+            // 1. Get Logs
+            let logs = store.getLogs(activeCar.id, 'fuel');
+            // 2. Sort Descending by Odometer
+            logs.sort((a, b) => b.odometer - a.odometer);
+
+            const unitVol = store.data.settings.unitSystem === 'metric' ? 'L' : 'Gal';
+            const unitDist = store.data.settings.unitSystem === 'metric' ? 'km' : 'mi';
+            const currency = store.data.settings.currency;
+            const isMetric = store.data.settings.unitSystem === 'metric';
+
+            container.innerHTML = `
+                <div class="pt-safe px-6 pb-4 flex justify-between items-end bg-white border-b border-slate-100 sticky top-0 z-10">
+                    <h1 class="text-3xl font-bold text-slate-800">${t('title_fuel')}</h1>
+                    <button onclick="ui.openAddFuel()" class="bg-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md">+</button>
+                </div>
+                <div class="p-4 space-y-3 pb-24">
+                    ${logs.length ? logs.map((log, index) => {
+                        const unitPrice = log.liters > 0 ? (log.cost / log.liters).toFixed(2) : '0.00';
+                        let statsHtml = `<div class="text-xs text-slate-400 italic text-center py-2">${t('waiting_data')}</div>`;
+                        
+                        if (index < logs.length - 1) {
+                            const prevLog = logs[index + 1];
+                            const dist = log.odometer - prevLog.odometer;
+                            const vol = parseFloat(log.liters);
+                            const cost = parseFloat(log.cost);
+
+                            if (dist > 0 && vol > 0) {
+                                let metrics = [];
+                                const l100 = (vol / dist) * 100;
+                                const kmL = dist / vol;
+                                const costPerDist = cost / dist;
+
+                                if (isMetric) {
+                                    metrics.push({ label: 'L/100km', val: l100.toFixed(1) });
+                                    metrics.push({ label: `${currency}/${unitDist}`, val: costPerDist.toFixed(2) });
+                                } else {
+                                    const mpg = kmL * 2.35215;
+                                    metrics.push({ label: 'MPG', val: mpg.toFixed(1) });
+                                    metrics.push({ label: 'km/L', val: kmL.toFixed(1) });
+                                    metrics.push({ label: `${currency}/${unitDist}`, val: costPerDist.toFixed(2) });
+                                }
+
+                                statsHtml = `
+                                    <div class="grid grid-cols-${metrics.length} gap-2 mt-3 pt-3 border-t border-slate-100">
+                                        ${metrics.map(m => `
+                                            <div class="text-center">
+                                                <div class="text-[10px] text-slate-400 uppercase font-bold">${m.label}</div>
+                                                <div class="text-sm font-bold text-teal-600">${m.val}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <div class="text-[10px] text-slate-300 text-center mt-1">+${dist} ${unitDist} ${t('prev_dist')}</div>
+                                `;
+                            }
+                        }
+
+                        return `
+                        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col gap-1 relative overflow-hidden">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-md">${new Date(log.date).toLocaleDateString()}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-lg text-slate-800">${utils.formatCurrency(log.cost)}</span>
+                                    <button onclick="ui.openAddFuel('${log.id}')" class="text-slate-300 hover:text-teal-600 p-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center mt-1">
+                                <div class="text-xs text-slate-500">
+                                    <span class="font-bold text-slate-700">${utils.formatFuel(log.liters)}</span>
+                                    <span class="text-slate-400"> @ ${currency}${unitPrice}/${unitVol}</span>
+                                </div>
+                                <div class="text-xs font-bold text-slate-500">${utils.formatDist(log.odometer)}</div>
+                            </div>
+                            ${statsHtml}
+                        </div>
+                    `}).join('') : `<div class="text-center py-10 text-slate-400">${t('no_logs')}</div>`}
+                </div>
+            `;
+        },
+
+        renderMaintenance(container) {
+            const activeCar = store.getActiveVehicle();
+            if(!activeCar) return this.renderNoCar(container);
+            
+            const logs = store.getLogs(activeCar.id).filter(l => l.type === 'service' || l.type === 'parking');
+
+            container.innerHTML = `
+                <div class="pt-safe px-6 pb-4 flex justify-between items-end bg-white border-b border-slate-100 sticky top-0 z-10">
+                    <h1 class="text-3xl font-bold text-slate-800">${t('title_service')}</h1>
+                    <button onclick="ui.openAddService()" class="bg-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md">+</button>
+                </div>
+                <div class="p-4 space-y-3 pb-24">
+                    ${logs.length ? logs.map(log => `
+                        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative">
+                            <div class="flex gap-3">
+                                <div class="w-10 h-10 rounded-lg ${log.type === 'service' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} flex items-center justify-center">
+                                    ${log.type === 'service' ? '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>' : '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>'}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between">
+                                        <h4 class="font-bold text-slate-800 capitalize">${log.note || (log.type === 'service' ? t('service') : t('parking'))}</h4>
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-slate-800">${utils.formatCurrency(log.cost)}</span>
+                                            <button onclick="ui.openAddService('${log.id}')" class="text-slate-300 hover:text-teal-600 p-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-1">${new Date(log.date).toLocaleDateString()} • ${log.type === 'parking' && log.location ? log.location : utils.formatDist(log.odometer)}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('') : `<div class="text-center py-10 text-slate-400">${t('no_logs')}</div>`}
+                </div>
+            `;
+        },
+
+        renderAnalytics(container) {
+             const activeCar = store.getActiveVehicle();
+             if(!activeCar) return this.renderNoCar(container);
+
+             container.innerHTML = `
+                 <div class="pt-safe px-6 pb-4 bg-white sticky top-0 z-10">
+                     <h1 class="text-3xl font-bold text-slate-800">${t('title_analytics')}</h1>
+                 </div>
+                 <div class="p-4 pb-24 space-y-6">
+                     <!-- Fixed Costs Card -->
+                     <div class="bg-white p-4 rounded-2xl card-shadow flex justify-between items-center">
+                         <div>
+                             <h3 class="text-sm font-bold text-slate-400 uppercase">${t('fixed_costs')}</h3>
+                             <p class="text-[10px] text-slate-400 mt-1">(${t('license_cost')} + ${t('insurance_cost')})</p>
+                         </div>
+                         <div class="text-2xl font-bold text-slate-800">
+                            ${utils.formatCurrency((parseFloat(activeCar.licenseCost)||0) + (parseFloat(activeCar.insuranceCost)||0))}
+                         </div>
+                     </div>
+
+                     <!-- Cost Card -->
+                     <div class="bg-white p-4 rounded-2xl card-shadow">
+                         <h3 class="text-sm font-bold text-slate-400 uppercase mb-4">${t('expense_breakdown')}</h3>
+                         <div class="h-48 w-full">
+                             <canvas id="costChart"></canvas>
+                         </div>
+                     </div>
+                     
+                     <!-- Efficiency Trend -->
+                     <div class="bg-white p-4 rounded-2xl card-shadow">
+                         <h3 class="text-sm font-bold text-slate-400 uppercase mb-4">${t('fuel_eff_trend')}</h3>
+                         <div class="h-48 w-full">
+                            <canvas id="effChart"></canvas>
+                         </div>
+                     </div>
+                 </div>
+             `;
+
+             setTimeout(() => {
+                 this.renderCharts(activeCar.id);
+             }, 100);
+        },
+        
+        renderCharts(vid) {
+            const logs = store.getLogs(vid);
+            const fuelLogs = logs.filter(l => l.type === 'fuel').sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // PIE CHART
+            const fuelCost = fuelLogs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
+            const serviceCost = logs.filter(l => l.type === 'service').reduce((sum, l) => sum + parseFloat(l.cost), 0);
+            const parkingCost = logs.filter(l => l.type === 'parking').reduce((sum, l) => sum + parseFloat(l.cost), 0);
+
+            new Chart(document.getElementById('costChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: [t('fuel'), t('service'), t('parking')],
+                    datasets: [{
+                        data: [fuelCost, serviceCost, parkingCost],
+                        backgroundColor: ['#0d9488', '#f97316', '#3b82f6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right' } }
+                }
+            });
+
+            // LINE CHART (Efficiency)
+            const dataPoints = [];
+            const labels = [];
+            
+            for (let i = 1; i < fuelLogs.length; i++) {
+                const dist = fuelLogs[i].odometer - fuelLogs[i-1].odometer;
+                const vol = parseFloat(fuelLogs[i].liters);
+                if(dist > 0 && vol > 0) {
+                    labels.push(new Date(fuelLogs[i].date).toLocaleDateString(undefined, {month:'short', day:'numeric'}));
+                    const val = (vol / dist) * 100;
+                    dataPoints.push(val);
+                }
+            }
+
+            new Chart(document.getElementById('effChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'L/100km',
+                        data: dataPoints,
+                        borderColor: '#0d9488',
+                        backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: false } }
+                }
+            });
+        },
+
+        renderSettings(container) {
+            const vehicles = store.data.vehicles;
+            
+            container.innerHTML = `
+                <div class="pt-safe px-6 pb-6 bg-gradient-to-br from-slate-800 to-slate-900 text-white sticky top-0 z-10">
+                    <h1 class="text-3xl font-bold">${t('title_settings')}</h1>
+                </div>
+                <div class="p-4 space-y-6 pb-24">
+                    <!-- Vehicles Section -->
+                    <section>
+                        <div class="flex justify-between items-center mb-2 px-2">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase">${t('vehicle_details')}</h3>
+                            <button onclick="ui.openAddVehicle()" class="text-primary text-xs font-bold">+ Add</button>
+                        </div>
+                        <div class="bg-white rounded-xl overflow-hidden shadow-sm">
+                            ${vehicles.map(v => `
+                                <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                                    <div class="flex-1 cursor-pointer" onclick="ui.switchVehicle('${v.id}')">
+                                        <p class="font-bold text-slate-800">${v.year} ${v.make} ${v.model}</p>
+                                        <p class="text-xs text-slate-400">${utils.formatDist(v.currentOdometer)}</p>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        ${v.id === store.data.settings.activeVehicleId ? 
+                                            '<div class="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>' : 
+                                            '<div class="w-6 h-6 rounded-full border border-slate-200"></div>'}
+                                        
+                                        <button onclick="ui.openAddVehicle('${v.id}')" class="text-slate-300 hover:text-teal-600 p-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </section>
+                    
+                    <!-- Preferences -->
+                    <section>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-2 px-2">${t('preferences')}</h3>
+                        <div class="bg-white rounded-xl overflow-hidden shadow-sm">
+                            <!-- Language -->
+                            <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                                <span>${t('language')}</span>
+                                <select onchange="ui.updateSetting('language', this.value)" class="bg-slate-100 rounded-md px-2 py-1 text-sm outline-none text-right rtl">
+                                    <option value="en" ${store.data.settings.language === 'en' ? 'selected' : ''}>English</option>
+                                    <option value="zh" ${store.data.settings.language === 'zh' ? 'selected' : ''}>繁體中文</option>
+                                </select>
+                            </div>
+
+                             <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                                <span>${t('currency')}</span>
+                                <select onchange="ui.updateSetting('currency', this.value)" class="bg-slate-100 rounded-md px-2 py-1 text-sm outline-none">
+                                    <option value="$" ${store.data.settings.currency === '$' ? 'selected' : ''}>USD ($)</option>
+                                    <option value="€" ${store.data.settings.currency === '€' ? 'selected' : ''}>EUR (€)</option>
+                                    <option value="£" ${store.data.settings.currency === '£' ? 'selected' : ''}>GBP (£)</option>
+                                    <option value="¥" ${store.data.settings.currency === '¥' ? 'selected' : ''}>JPY (¥)</option>
+                                    <option value="HK$" ${store.data.settings.currency === 'HK$' ? 'selected' : ''}>HKD (HK$)</option>
+                                    <option value="A$" ${store.data.settings.currency === 'A$' ? 'selected' : ''}>AUD (A$)</option>
+                                </select>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <span>${t('units')}</span>
+                                <select onchange="ui.updateSetting('unitSystem', this.value)" class="bg-slate-100 rounded-md px-2 py-1 text-sm outline-none">
+                                    <option value="metric" ${store.data.settings.unitSystem === 'metric' ? 'selected' : ''}>${t('unit_metric')}</option>
+                                    <option value="imperial" ${store.data.settings.unitSystem === 'imperial' ? 'selected' : ''}>${t('unit_imperial')}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Data -->
+                    <section>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-2 px-2">${t('data')}</h3>
+                        <div class="bg-white rounded-xl overflow-hidden shadow-sm">
+                            <button onclick="store.exportData()" class="w-full p-4 text-left text-primary font-medium active:bg-slate-50">${t('export_json')}</button>
+                            <div class="border-t border-slate-50">
+                                <input type="file" id="import-file" class="hidden" accept=".json" onchange="ui.handleImport(this)">
+                                <button onclick="document.getElementById('import-file').click()" class="w-full p-4 text-left text-primary font-medium active:bg-slate-50">${t('import_json')}</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="text-center text-xs text-slate-300 mt-8">
+                        FuelMate v1.3.0<br>Offline PWA
+                    </div>
+                </div>
+            `;
+        },
+
+        handleImport(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const success = store.importData(e.target.result);
+                if (success) {
+                    alert(t('import_success'));
+                    router.navigate('dashboard');
+                } else {
+                    alert(t('import_error'));
+                }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        },
+
+        renderNoCar(container) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full p-8 text-center">
+                    <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6 text-4xl">🚗</div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">${t('no_vehicle')}</h2>
+                    <p class="text-slate-500 mb-6">${t('no_vehicle_desc')}</p>
+                    <button onclick="ui.openAddVehicle()" class="bg-teal-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-teal-500/30">${t('add_vehicle')}</button>
+                </div>
+            `;
+        },
+
+        // --- MODALS & ACTIONS ---
+        
+        closeModal() {
+            const el = document.getElementById('modal-container');
+            el.classList.add('hidden');
+        },
+
+        openAddVehicle(id = null) {
+            const el = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            
+            let vehicle = { 
+                make: '', model: '', year: '', currentOdometer: '',
+                licenseDate: '', licenseCost: '', insuranceDate: '', insuranceCost: '' 
+            };
+            let title = t('add_vehicle');
+            let btnText = t('save_vehicle');
+            let hiddenId = '';
+            let deleteBtn = '';
+
+            if (id) {
+                vehicle = store.getVehicle(id);
+                // Ensure fields exist
+                vehicle.licenseDate = vehicle.licenseDate || '';
+                vehicle.licenseCost = vehicle.licenseCost || '';
+                vehicle.insuranceDate = vehicle.insuranceDate || '';
+                vehicle.insuranceCost = vehicle.insuranceCost || '';
+                
+                title = t('edit_vehicle');
+                btnText = t('save_changes');
+                hiddenId = `<input type="hidden" name="id" value="${id}">`;
+            }
+
+            content.innerHTML = `
+                <h2 class="text-xl font-bold mb-6">${title}</h2>
+                <form onsubmit="ui.submitVehicle(event)" class="space-y-4">
+                    ${hiddenId}
+                    <!-- Basic Info -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('make')}</label>
+                        <input type="text" name="make" required value="${vehicle.make}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('vehicle_placeholder_make')}">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('model')}</label>
+                        <input type="text" name="model" required value="${vehicle.model}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('vehicle_placeholder_model')}">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                         <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('year')}</label>
+                            <input type="number" name="year" required value="${vehicle.year}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="2023">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('odometer')}</label>
+                            <input type="number" name="odometer" required value="${vehicle.currentOdometer}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0">
+                        </div>
+                    </div>
+                    
+                    <!-- Fixed Costs & Expiry -->
+                    <div class="pt-4 border-t border-slate-100">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3">${t('section_fixed')}</h3>
+                        <!-- License -->
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('license_exp')}</label>
+                                <input type="date" name="licenseDate" value="${vehicle.licenseDate}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('license_cost')}</label>
+                                <input type="number" step="0.01" name="licenseCost" value="${vehicle.licenseCost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500">
+                            </div>
+                        </div>
+                        <!-- Insurance -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('insurance_exp')}</label>
+                                <input type="date" name="insuranceDate" value="${vehicle.insuranceDate}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('insurance_cost')}</label>
+                                <input type="number" step="0.01" name="insuranceCost" value="${vehicle.insuranceCost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
+                        <button type="submit" class="flex-[2] bg-teal-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/30">${btnText}</button>
+                    </div>
+                </form>
+            `;
+            el.classList.remove('hidden');
+        },
+
+        async openAddFuel(id = null) {
+            const activeCar = store.getActiveVehicle();
+            if (!activeCar) return this.openAddVehicle();
+
+            let log = { date: new Date().toISOString().split('T')[0], odometer: activeCar.currentOdometer, liters: '', cost: '', location: '', unitPrice: '' };
+            let title = t('log_fuel');
+            let btnText = t('save_log');
+            let hiddenId = '';
+            let deleteBtn = '';
+
+            if (id) {
+                log = store.getLog(id);
+                log.date = new Date(log.date).toISOString().split('T')[0]; // Format date input
+                title = t('edit_record');
+                btnText = t('save_changes');
+                hiddenId = `<input type="hidden" name="id" value="${id}">`;
+                if (log.liters > 0) log.unitPrice = (log.cost / log.liters).toFixed(2);
+                deleteBtn = `<button type="button" onclick="ui.deleteLogAndClose('${id}')" class="flex-1 bg-red-50 text-red-500 font-bold py-4 rounded-xl">${t('delete')}</button>`;
+            } else {
+                // Get location for new log only
+                let loc = await utils.getCurrentLocation();
+                if(loc) log.location = `${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
+            }
+
+            const isMetric = store.data.settings.unitSystem === 'metric';
+            const unitLabel = isMetric ? t('price_per_unit_l') : t('price_per_unit_g');
+
+            const el = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <span class="bg-teal-100 text-teal-600 p-2 rounded-lg">⛽️</span> ${title}
+                </h2>
+                <form onsubmit="ui.submitLog(event, 'fuel')" class="space-y-4">
+                    ${hiddenId}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('date')}</label>
+                            <input type="date" name="date" required value="${log.date}" class="w-full bg-slate-100 p-3 rounded-xl outline-none">
+                        </div>
+                         <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('odometer')}</label>
+                            <input type="number" name="odometer" required value="${log.odometer}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('volume')} (${isMetric ? 'L' : 'Gal'})</label>
+                            <input type="number" step="0.01" name="liters" value="${log.liters}" oninput="ui.calcFuel('vol')" required class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${unitLabel}</label>
+                            <input type="number" step="0.01" name="unitPrice" value="${log.unitPrice}" oninput="ui.calcFuel('price')" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('cost')}</label>
+                        <input type="number" step="0.01" name="cost" value="${log.cost}" oninput="ui.calcFuel('cost')" required class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00">
+                    </div>
+                    
+                    <div>
+                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label>
+                         <input type="text" name="location" value="${log.location}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('location_placeholder')}">
+                    </div>
+                    <div class="flex gap-3 mt-4">
+                        ${deleteBtn}
+                        <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
+                        <button type="submit" class="flex-[2] bg-teal-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/30">${btnText}</button>
+                    </div>
+                </form>
+            `;
+            el.classList.remove('hidden');
+        },
+
+        calcFuel(field) {
+            const volInput = document.getElementsByName('liters')[0];
+            const costInput = document.getElementsByName('cost')[0];
+            const priceInput = document.getElementsByName('unitPrice')[0];
+
+            const vol = parseFloat(volInput.value) || 0;
+            const cost = parseFloat(costInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+
+            // 1. Change Volume
+            if (field === 'vol') {
+                if (price > 0) {
+                    costInput.value = (vol * price).toFixed(2);
+                } else if (cost > 0) {
+                    priceInput.value = (cost / vol).toFixed(2);
+                }
+            }
+            // 2. Change Price
+            else if (field === 'price') {
+                if (vol > 0) {
+                    costInput.value = (vol * price).toFixed(2);
+                }
+            }
+            // 3. Change Cost
+            else if (field === 'cost') {
+                if (vol > 0) {
+                    priceInput.value = (cost / vol).toFixed(2);
+                }
+            }
+        },
+
+        openAddService(id = null) {
+            const activeCar = store.getActiveVehicle();
+            if (!activeCar) return this.openAddVehicle();
+
+            let log = { type: 'service', date: new Date().toISOString().split('T')[0], cost: '', note: '' };
+            let title = t('log_service');
+            let btnText = t('save_entry');
+            let hiddenId = '';
+            let deleteBtn = '';
+
+            if (id) {
+                log = store.getLog(id);
+                log.date = new Date(log.date).toISOString().split('T')[0];
+                title = t('edit_record');
+                btnText = t('save_changes');
+                hiddenId = `<input type="hidden" name="id" value="${id}">`;
+                deleteBtn = `<button type="button" onclick="ui.deleteLogAndClose('${id}')" class="flex-1 bg-red-50 text-red-500 font-bold py-4 rounded-xl">${t('delete')}</button>`;
+            }
+
+            const el = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <span class="bg-orange-100 text-orange-600 p-2 rounded-lg">🔧</span> ${title}
+                </h2>
+                <form onsubmit="ui.submitLog(event, 'service')" class="space-y-4">
+                    ${hiddenId}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('service_type')}</label>
+                        <select name="subType" class="w-full bg-slate-100 p-3 rounded-xl outline-none">
+                            <option value="Maintenance" ${log.type === 'service' ? 'selected' : ''}>${t('type_maint')}</option>
+                            <option value="Parking" ${log.type === 'parking' ? 'selected' : ''}>${t('type_parking')}</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('date')}</label>
+                            <input type="date" name="date" required value="${log.date}" class="w-full bg-slate-100 p-3 rounded-xl outline-none">
+                        </div>
+                         <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('cost')}</label>
+                            <input type="number" step="0.01" name="cost" required value="${log.cost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('note')}</label>
+                        <input type="text" name="note" required value="${log.note}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('log_placeholder_note')}">
+                    </div>
+                    <div class="flex gap-3 mt-4">
+                        ${deleteBtn}
+                        <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
+                        <button type="submit" class="flex-[2] bg-teal-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/30">${btnText}</button>
+                    </div>
+                </form>
+            `;
+            el.classList.remove('hidden');
+        },
+
+        submitVehicle(e) {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const id = fd.get('id');
+            
+            const vehicleData = {
+                make: fd.get('make'),
+                model: fd.get('model'),
+                year: fd.get('year'),
+                currentOdometer: parseInt(fd.get('odometer')),
+                // Capture new fields
+                licenseDate: fd.get('licenseDate') || '',
+                licenseCost: parseFloat(fd.get('licenseCost')) || 0,
+                insuranceDate: fd.get('insuranceDate') || '',
+                insuranceCost: parseFloat(fd.get('insuranceCost')) || 0
+            };
+
+            if (id) {
+                // Update
+                vehicleData.id = id;
+                store.updateVehicle(vehicleData);
+            } else {
+                // Create
+                store.addVehicle(vehicleData);
+            }
+            
+            this.closeModal();
+            router.navigate('dashboard');
+        },
+
+        submitLog(e, routeType) {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const activeCar = store.getActiveVehicle();
+            const id = fd.get('id');
+            
+            // Handle subtype override
+            let finalType = routeType;
+            if (fd.get('subType') === 'Parking') finalType = 'parking';
+            if (fd.get('subType') === 'Maintenance') finalType = 'service';
+            // Keep fuel as fuel
+            if (routeType === 'fuel') finalType = 'fuel';
+
+            const logData = {
+                vehicleId: activeCar.id,
+                type: finalType,
+                date: fd.get('date'),
+                cost: fd.get('cost'),
+                odometer: fd.get('odometer') ? parseInt(fd.get('odometer')) : (activeCar.currentOdometer),
+                liters: fd.get('liters') || 0,
+                location: fd.get('location') || '',
+                note: fd.get('note') || ''
+            };
+            
+            if (id) {
+                logData.id = id;
+                store.updateLog(logData);
+            } else {
+                store.addLog(logData);
+            }
+
+            this.closeModal();
+            router.navigate(routeType === 'fuel' ? 'fuel' : 'maintenance');
+        },
+
+        deleteLogAndClose(id) {
+            if(confirm(t('confirm_delete'))) {
+                store.deleteLog(id);
+                this.closeModal();
+                router.navigate(router.current); 
+            }
+        },
+
+        switchVehicle(id) {
+            store.data.settings.activeVehicleId = id;
+            store.save();
+            router.navigate('dashboard');
+        },
+
+        updateSetting(key, val) {
+            store.data.settings[key] = val;
+            store.save();
+            router.navigate(router.current); 
+        }
+    };
+
+    // --- INIT ---
+    window.addEventListener('DOMContentLoaded', () => {
+        store.init();
+        router.navigate('dashboard');
+        
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'fuelmate-v1';
+                const urlsToCache = [
+                    './',
+                    './index.html',
+                    'https://cdn.tailwindcss.com',
+                    'https://cdn.jsdelivr.net/npm/chart.js'
+                ];
+
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+                    );
+                });
+
+                self.addEventListener('fetch', event => {
+                    event.respondWith(
+                        caches.match(event.request).then(response => {
+                            return response || fetch(event.request);
+                        })
+                    );
+                });
+            `;
+            const blob = new Blob([swCode], {type: 'text/javascript'});
+            navigator.serviceWorker.register(URL.createObjectURL(blob))
+                .then(() => console.log('SW registered'))
+                .catch(err => console.log('SW failed', err));
+        }
+    });
+    </script>
+</body>
+</html>

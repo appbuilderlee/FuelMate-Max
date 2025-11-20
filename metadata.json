@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Copy of FuelMate  2",
+  "description": "A complete vehicle fuel and maintenance tracking PWA.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
