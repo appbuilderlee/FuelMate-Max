@@ -149,6 +149,7 @@
             date: 'Date', cost: 'Total Cost', volume: 'Volume', location: 'Location',
             service_type: 'Service Type', note: 'Note / Description',
             type_maint: 'Maintenance / Repair', type_parking: 'Parking',
+            type_license: 'License Renewal', type_insurance: 'Insurance Renewal', type_registration: 'Registration',
             confirm_delete: 'Are you sure you want to delete this record?',
             unit_metric: 'Metric (L, km)', unit_imperial: 'Imperial (Gal, mi)',
             fuel: 'Fuel', service: 'Service', parking: 'Parking',
@@ -164,9 +165,11 @@
             save_changes: 'Save Changes', cancel: 'Cancel', delete: 'Delete',
             license_exp: 'License Expiry', license_cost: 'Renewal Cost',
             insurance_exp: 'Insurance Expiry', insurance_cost: 'Renewal Cost',
+            registration_exp: 'Registration Expiry', registration_cost: 'Registration Cost',
             reminders: 'Reminders', expired: 'Expired', days_left: 'days left',
             fixed_costs: 'Annual Fixed Costs', section_fixed: 'Fixed Costs & Expiry',
-            detecting: 'Locating...', geo_error: 'Location not found'
+            detecting: 'Locating...', geo_error: 'Location not found',
+            new_expiry: 'New Expiry Date'
         },
         zh: {
             nav_dash: '首頁', nav_fuel: '加油', nav_service: '維修', nav_stats: '統計', nav_settings: '設定',
@@ -184,6 +187,7 @@
             date: '日期', cost: '總金額', volume: '油量', location: '地點',
             service_type: '類別', note: '備註 / 描述',
             type_maint: '維修保養', type_parking: '停車費',
+            type_license: '車牌續期', type_insurance: '保險續期', type_registration: '車輛登記',
             confirm_delete: '確定刪除此項目？',
             unit_metric: '公制 (公升, 公里)', unit_imperial: '英制 (加侖, 英里)',
             fuel: '加油', service: '維修', parking: '停車',
@@ -197,11 +201,13 @@
             cost_km: '每公里成本', total_dist: '總里程',
             edit_vehicle: '編輯車輛', edit_record: '編輯紀錄',
             save_changes: '保存修改', cancel: '取消', delete: '刪除',
-            license_exp: '車牌到期日期', license_cost: '車牌續期費用',
-            insurance_exp: '保險到期日期', insurance_cost: '保險續期費用',
+            license_exp: '車牌到期', license_cost: '車牌費用',
+            insurance_exp: '保險到期', insurance_cost: '保險費用',
+            registration_exp: '登記到期', registration_cost: '登記費用',
             reminders: '提醒通知', expired: '已過期', days_left: '天後到期',
             fixed_costs: '年度固定支出', section_fixed: '車牌與保險',
-            detecting: '定位中...', geo_error: '無法獲取位置'
+            detecting: '定位中...', geo_error: '無法獲取位置',
+            new_expiry: '新到期日'
         }
     };
 
@@ -305,6 +311,11 @@
                 if (type && l.type !== type) return false;
                 return true;
             });
+        },
+
+        getLatestLog(vehicleId, type) {
+            const logs = this.getLogs(vehicleId, type);
+            return logs.length > 0 ? logs[0] : null;
         },
 
         exportData() {
@@ -553,13 +564,21 @@
         },
 
         renderReminders(car) {
-            const licDays = utils.getDaysLeft(car.licenseDate);
-            const insDays = utils.getDaysLeft(car.insuranceDate);
-            if (licDays === null && insDays === null) return '';
+            const licLog = store.getLatestLog(car.id, 'license');
+            const insLog = store.getLatestLog(car.id, 'insurance');
+            const regLog = store.getLatestLog(car.id, 'registration');
+
+            const licDays = licLog ? utils.getDaysLeft(licLog.expiryDate) : null;
+            const insDays = insLog ? utils.getDaysLeft(insLog.expiryDate) : null;
+            const regDays = regLog ? utils.getDaysLeft(regLog.expiryDate) : null;
+
+            if (licDays === null && insDays === null && regDays === null) return '';
 
             const items = [];
-            if (licDays !== null) items.push({ type: t('license_exp'), days: licDays, cost: car.licenseCost, icon: '📄' });
-            if (insDays !== null) items.push({ type: t('insurance_exp'), days: insDays, cost: car.insuranceCost, icon: '🛡️' });
+            if (licDays !== null) items.push({ type: t('license_exp'), days: licDays, cost: licLog.cost, icon: '📄' });
+            if (insDays !== null) items.push({ type: t('insurance_exp'), days: insDays, cost: insLog.cost, icon: '🛡️' });
+            if (regDays !== null) items.push({ type: t('registration_exp'), days: regDays, cost: regLog.cost, icon: '📋' });
+            
             items.sort((a, b) => a.days - b.days);
 
             let html = `<div class="px-6 mb-6"><div class="bg-white rounded-2xl card-shadow overflow-hidden">
@@ -579,7 +598,7 @@
                 else { bgClass = 'bg-emerald-50 border-emerald-100'; textClass = 'text-emerald-600'; statusText = `${item.days} ${t('days_left')}`; }
 
                 html += `
-                    <div onclick="ui.openAddVehicle('${car.id}')" class="${bgClass} border rounded-xl p-3 mb-2 last:mb-0 flex items-center justify-between transition active:opacity-70 cursor-pointer">
+                    <div class="${bgClass} border rounded-xl p-3 mb-2 last:mb-0 flex items-center justify-between transition">
                         <div class="flex items-center gap-3">
                             <div class="text-xl">${item.icon}</div>
                             <div>
@@ -606,8 +625,11 @@
             return logs.map(log => {
                 let icon = '', color = '', typeLabel = '', editFn = '';
                 if(log.type === 'fuel') { icon = '⛽️'; color='bg-teal-50 text-teal-600'; typeLabel = t('fuel'); editFn = `ui.openAddFuel('${log.id}')`; }
-                if(log.type === 'service') { icon = '🔧'; color='bg-orange-50 text-orange-600'; typeLabel = t('service'); editFn = `ui.openAddService('${log.id}')`; }
-                if(log.type === 'parking') { icon = '🅿️'; color='bg-blue-50 text-blue-600'; typeLabel = t('parking'); editFn = `ui.openAddService('${log.id}')`; }
+                else if(log.type === 'service') { icon = '🔧'; color='bg-orange-50 text-orange-600'; typeLabel = t('type_maint'); editFn = `ui.openAddService('${log.id}')`; }
+                else if(log.type === 'parking') { icon = '🅿️'; color='bg-blue-50 text-blue-600'; typeLabel = t('type_parking'); editFn = `ui.openAddService('${log.id}')`; }
+                else if(log.type === 'license') { icon = '📄'; color='bg-purple-50 text-purple-600'; typeLabel = t('type_license'); editFn = `ui.openAddService('${log.id}')`; }
+                else if(log.type === 'insurance') { icon = '🛡️'; color='bg-indigo-50 text-indigo-600'; typeLabel = t('type_insurance'); editFn = `ui.openAddService('${log.id}')`; }
+                else if(log.type === 'registration') { icon = '📋'; color='bg-pink-50 text-pink-600'; typeLabel = t('type_registration'); editFn = `ui.openAddService('${log.id}')`; }
 
                 return `
                 <div class="bg-white p-4 rounded-xl border border-slate-100 mb-3 flex items-center justify-between shadow-sm">
@@ -701,7 +723,7 @@
         renderMaintenance(container) {
             const activeCar = store.getActiveVehicle();
             if(!activeCar) return this.renderNoCar(container);
-            const logs = store.getLogs(activeCar.id).filter(l => l.type === 'service' || l.type === 'parking');
+            const logs = store.getLogs(activeCar.id).filter(l => l.type !== 'fuel');
 
             container.innerHTML = `
                 <div class="pt-[max(20px,env(safe-area-inset-top))] px-6 pb-4 flex justify-between items-end bg-white border-b border-slate-100 sticky top-0 z-40">
@@ -709,25 +731,33 @@
                     <button onclick="ui.openAddService()" class="bg-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md">+</button>
                 </div>
                 <div class="p-4 space-y-3">
-                    ${logs.length ? logs.map(log => `
+                    ${logs.length ? logs.map(log => {
+                        let icon = '🔧', colorClass = 'bg-orange-100 text-orange-600', title = t('type_maint');
+                        if(log.type === 'parking') { icon = '🅿️'; colorClass = 'bg-blue-100 text-blue-600'; title = t('type_parking'); }
+                        if(log.type === 'license') { icon = '📄'; colorClass = 'bg-purple-100 text-purple-600'; title = t('type_license'); }
+                        if(log.type === 'insurance') { icon = '🛡️'; colorClass = 'bg-indigo-100 text-indigo-600'; title = t('type_insurance'); }
+                        if(log.type === 'registration') { icon = '📋'; colorClass = 'bg-pink-100 text-pink-600'; title = t('type_registration'); }
+
+                        return `
                         <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative">
                             <div class="flex gap-3">
-                                <div class="w-10 h-10 rounded-lg ${log.type === 'service' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} flex items-center justify-center">
-                                    ${log.type === 'service' ? '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>' : '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>'}
+                                <div class="w-10 h-10 rounded-lg ${colorClass} flex items-center justify-center text-lg">
+                                    ${icon}
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex justify-between">
-                                        <h4 class="font-bold text-slate-800 capitalize">${log.note || (log.type === 'service' ? t('service') : t('parking'))}</h4>
+                                        <h4 class="font-bold text-slate-800 capitalize">${log.note || title}</h4>
                                         <div class="flex items-center gap-2">
                                             <span class="font-bold text-slate-800">${utils.formatCurrency(log.cost)}</span>
                                             <button onclick="ui.openAddService('${log.id}')" class="text-slate-300 hover:text-teal-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg></button>
                                         </div>
                                     </div>
-                                    <p class="text-xs text-slate-500 mt-1">${new Date(log.date).toLocaleDateString()} • ${log.type === 'parking' && log.location ? log.location : utils.formatDist(log.odometer)}</p>
+                                    <p class="text-xs text-slate-500 mt-1">${new Date(log.date).toLocaleDateString()} • ${log.location || utils.formatDist(log.odometer)}</p>
+                                    ${log.expiryDate ? `<p class="text-xs text-teal-600 mt-1 font-medium">Expires: ${log.expiryDate}</p>` : ''}
                                 </div>
                             </div>
                         </div>
-                    `).join('') : `<div class="text-center py-10 text-slate-400">${t('no_logs')}</div>`}
+                    `}).join('') : `<div class="text-center py-10 text-slate-400">${t('no_logs')}</div>`}
                 </div>
             `;
         },
@@ -735,6 +765,17 @@
         renderAnalytics(container) {
              const activeCar = store.getActiveVehicle();
              if(!activeCar) return this.renderNoCar(container);
+             
+             // Calc annual fixed costs (last 365 days)
+             const oneYearAgo = new Date();
+             oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+             
+             const logs = store.getLogs(activeCar.id);
+             const fixedLogs = logs.filter(l => 
+                (l.type === 'license' || l.type === 'insurance' || l.type === 'registration') && 
+                new Date(l.date) >= oneYearAgo
+             );
+             const fixedCost = fixedLogs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
 
              container.innerHTML = `
                  <div class="pt-[max(20px,env(safe-area-inset-top))] px-6 pb-4 bg-white sticky top-0 z-40">
@@ -742,8 +783,8 @@
                  </div>
                  <div class="p-4 space-y-6">
                      <div class="bg-white p-4 rounded-2xl card-shadow flex justify-between items-center">
-                         <div><h3 class="text-sm font-bold text-slate-400 uppercase">${t('fixed_costs')}</h3><p class="text-[10px] text-slate-400 mt-1">(${t('license_cost')} + ${t('insurance_cost')})</p></div>
-                         <div class="text-2xl font-bold text-slate-800">${utils.formatCurrency((parseFloat(activeCar.licenseCost)||0) + (parseFloat(activeCar.insuranceCost)||0))}</div>
+                         <div><h3 class="text-sm font-bold text-slate-400 uppercase">${t('fixed_costs')}</h3><p class="text-[10px] text-slate-400 mt-1">(${t('last_30')})</p></div>
+                         <div class="text-2xl font-bold text-slate-800">${utils.formatCurrency(fixedCost)}</div>
                      </div>
                      <div class="bg-white p-4 rounded-2xl card-shadow">
                          <h3 class="text-sm font-bold text-slate-400 uppercase mb-4">${t('expense_breakdown')}</h3>
@@ -761,15 +802,17 @@
         renderCharts(vid) {
             const logs = store.getLogs(vid);
             const fuelLogs = logs.filter(l => l.type === 'fuel').sort((a, b) => new Date(a.date) - new Date(b.date));
+            
             const fuelCost = fuelLogs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
             const serviceCost = logs.filter(l => l.type === 'service').reduce((sum, l) => sum + parseFloat(l.cost), 0);
             const parkingCost = logs.filter(l => l.type === 'parking').reduce((sum, l) => sum + parseFloat(l.cost), 0);
+            const fixedCost = logs.filter(l => ['license','insurance','registration'].includes(l.type)).reduce((sum, l) => sum + parseFloat(l.cost), 0);
 
             new Chart(document.getElementById('costChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: [t('fuel'), t('service'), t('parking')],
-                    datasets: [{ data: [fuelCost, serviceCost, parkingCost], backgroundColor: ['#0d9488', '#f97316', '#3b82f6'], borderWidth: 0 }]
+                    labels: [t('fuel'), t('type_maint'), t('type_parking'), t('section_fixed')],
+                    datasets: [{ data: [fuelCost, serviceCost, parkingCost, fixedCost], backgroundColor: ['#0d9488', '#f97316', '#3b82f6', '#a855f7'], borderWidth: 0 }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
             });
@@ -859,7 +902,7 @@
                             </div>
                         </div>
                     </section>
-                    <div class="text-center text-xs text-slate-300 mt-8">FuelMate v1.3.2<br>Offline PWA</div>
+                    <div class="text-center text-xs text-slate-300 mt-8">FuelMate v1.3.3<br>Offline PWA</div>
                 </div>
             `;
         },
@@ -891,7 +934,7 @@
 
         openAddVehicle(id = null) {
             const content = document.getElementById('modal-content');
-            let vehicle = { make: '', model: '', year: '', currentOdometer: '', licenseDate: '', licenseCost: '', insuranceDate: '', insuranceCost: '' };
+            let vehicle = { make: '', model: '', year: '', currentOdometer: '' };
             let title = t('add_vehicle'), btnText = t('save_vehicle'), hiddenId = '';
 
             if (id) {
@@ -908,17 +951,6 @@
                     <div class="grid grid-cols-2 gap-4">
                          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('year')}</label><input type="number" name="year" required value="${vehicle.year}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="2023"></div>
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('odometer')}</label><input type="number" name="odometer" required value="${vehicle.currentOdometer}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0"></div>
-                    </div>
-                    <div class="pt-4 border-t border-slate-100">
-                        <h3 class="text-sm font-bold text-slate-700 mb-3">${t('section_fixed')}</h3>
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('license_exp')}</label><input type="date" name="licenseDate" value="${vehicle.licenseDate}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('license_cost')}</label><input type="number" step="0.01" name="licenseCost" value="${vehicle.licenseCost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('insurance_exp')}</label><input type="date" name="insuranceDate" value="${vehicle.insuranceDate}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('insurance_cost')}</label><input type="number" step="0.01" name="insuranceCost" value="${vehicle.insuranceCost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"></div>
-                        </div>
                     </div>
                     <div class="flex gap-3 mt-6">
                         <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
@@ -1010,7 +1042,7 @@
         openAddService(id = null) {
             const activeCar = store.getActiveVehicle();
             if (!activeCar) return this.openAddVehicle();
-            let log = { type: 'service', date: new Date().toISOString().split('T')[0], cost: '', note: '', location: '' };
+            let log = { type: 'service', date: new Date().toISOString().split('T')[0], cost: '', note: '', location: '', expiryDate: '' };
             let title = t('log_service'), btnText = t('save_entry'), hiddenId = '', deleteBtn = '';
 
             if (id) {
@@ -1024,11 +1056,26 @@
                 <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><span class="bg-orange-100 text-orange-600 p-2 rounded-lg">🔧</span> ${title}</h2>
                 <form onsubmit="ui.submitLog(event, 'service')" class="space-y-4">
                     ${hiddenId}
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('service_type')}</label><select name="subType" class="w-full bg-slate-100 p-3 rounded-xl outline-none"><option value="Maintenance" ${log.type === 'service' ? 'selected' : ''}>${t('type_maint')}</option><option value="Parking" ${log.type === 'parking' ? 'selected' : ''}>${t('type_parking')}</option></select></div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('service_type')}</label>
+                        <select name="subType" id="service-type-select" onchange="ui.toggleExpiryField()" class="w-full bg-slate-100 p-3 rounded-xl outline-none">
+                            <option value="Maintenance" ${log.type === 'service' ? 'selected' : ''}>${t('type_maint')}</option>
+                            <option value="Parking" ${log.type === 'parking' ? 'selected' : ''}>${t('type_parking')}</option>
+                            <option value="License" ${log.type === 'license' ? 'selected' : ''}>${t('type_license')}</option>
+                            <option value="Insurance" ${log.type === 'insurance' ? 'selected' : ''}>${t('type_insurance')}</option>
+                            <option value="Registration" ${log.type === 'registration' ? 'selected' : ''}>${t('type_registration')}</option>
+                        </select>
+                    </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('date')}</label><input type="date" name="date" required value="${log.date}" class="w-full bg-slate-100 p-3 rounded-xl outline-none"></div>
                          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('cost')}</label><input type="number" step="0.01" name="cost" required value="${log.cost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
                     </div>
+                    
+                    <div id="expiry-field" class="${(log.type === 'license' || log.type === 'insurance' || log.type === 'registration') ? '' : 'hidden'}">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('new_expiry')}</label>
+                        <input type="date" name="expiryDate" value="${log.expiryDate || ''}" class="w-full bg-slate-100 p-3 rounded-xl outline-none border-2 border-teal-100 focus:border-teal-500">
+                    </div>
+
                     <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('note')}</label><input type="text" name="note" required value="${log.note}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('log_placeholder_note')}"></div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label>
@@ -1049,14 +1096,22 @@
             document.getElementById('modal-container').classList.remove('hidden');
         },
 
+        toggleExpiryField() {
+            const type = document.getElementById('service-type-select').value;
+            const field = document.getElementById('expiry-field');
+            if (['License', 'Insurance', 'Registration'].includes(type)) {
+                field.classList.remove('hidden');
+            } else {
+                field.classList.add('hidden');
+            }
+        },
+
         submitVehicle(e) {
             e.preventDefault();
             const fd = new FormData(e.target);
             const id = fd.get('id');
             const vehicleData = {
-                make: fd.get('make'), model: fd.get('model'), year: fd.get('year'), currentOdometer: parseInt(fd.get('odometer')),
-                licenseDate: fd.get('licenseDate') || '', licenseCost: parseFloat(fd.get('licenseCost')) || 0,
-                insuranceDate: fd.get('insuranceDate') || '', insuranceCost: parseFloat(fd.get('insuranceCost')) || 0
+                make: fd.get('make'), model: fd.get('model'), year: fd.get('year'), currentOdometer: parseInt(fd.get('odometer'))
             };
             if (id) { vehicleData.id = id; store.updateVehicle(vehicleData); } else { store.addVehicle(vehicleData); }
             this.closeModal(); router.navigate('dashboard');
@@ -1067,15 +1122,21 @@
             const fd = new FormData(e.target);
             const activeCar = store.getActiveVehicle();
             const id = fd.get('id');
+            const subType = fd.get('subType');
+            
             let finalType = routeType;
-            if (fd.get('subType') === 'Parking') finalType = 'parking';
-            if (fd.get('subType') === 'Maintenance') finalType = 'service';
+            if (subType === 'Parking') finalType = 'parking';
+            if (subType === 'Maintenance') finalType = 'service';
+            if (subType === 'License') finalType = 'license';
+            if (subType === 'Insurance') finalType = 'insurance';
+            if (subType === 'Registration') finalType = 'registration';
             if (routeType === 'fuel') finalType = 'fuel';
 
             const logData = {
                 vehicleId: activeCar.id, type: finalType, date: fd.get('date'), cost: fd.get('cost'),
                 odometer: fd.get('odometer') ? parseInt(fd.get('odometer')) : (activeCar.currentOdometer),
-                liters: fd.get('liters') || 0, location: fd.get('location') || '', note: fd.get('note') || ''
+                liters: fd.get('liters') || 0, location: fd.get('location') || '', note: fd.get('note') || '',
+                expiryDate: fd.get('expiryDate') || ''
             };
             
             if (id) { logData.id = id; store.updateLog(logData); } else { store.addLog(logData); }
