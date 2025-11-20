@@ -37,28 +37,25 @@
     <style>
         body {
             -webkit-tap-highlight-color: transparent;
-            /* Prevent bounce effect on body */
-            overscroll-behavior-y: none;
+            /* Allow native scrolling */
+            overscroll-behavior-y: auto;
         }
-        .ios-scroll {
-            -webkit-overflow-scrolling: touch;
+        /* Variables for Safe Area */
+        :root {
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
         }
-        /* Safe area padding bottom for the main scroll container to clear the nav */
-        .pb-safe {
-            padding-bottom: calc(100px + env(safe-area-inset-bottom));
+        
+        /* Safe Top Padding for Fixed/Sticky Headers */
+        .pt-safe-header {
+            padding-top: max(20px, var(--safe-top));
         }
-        /* Safe area padding top for headers to clear the notch */
-        .pt-safe {
-            padding-top: calc(env(safe-area-inset-top) + 24px);
+        
+        /* Content padding bottom to clear nav */
+        .pb-safe-nav {
+            padding-bottom: calc(80px + var(--safe-bottom));
         }
-        /* Hide scrollbar for clean UI */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+
         .card-shadow {
             box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
         }
@@ -69,17 +66,21 @@
             from { transform: translateY(100%); }
             to { transform: translateY(0); }
         }
+        
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-safe-nav">
 
     <!-- MAIN CONTENT AREA -->
-    <main id="main-content" class="flex-1 overflow-y-auto ios-scroll relative">
+    <main id="main-content" class="w-full">
         <!-- Dynamic Content Loaded Here -->
     </main>
 
     <!-- BOTTOM NAVIGATION -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] z-50">
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] z-50 transition-transform duration-300">
         <div class="flex justify-around items-center h-16">
             <button onclick="router.navigate('dashboard')" class="nav-btn w-full h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-dashboard">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
@@ -121,7 +122,7 @@
     <!-- OVERLAYS / MODALS -->
     <div id="modal-container" class="fixed inset-0 z-[100] hidden">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="ui.closeModal()"></div>
-        <div id="modal-content" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 pb-10 slide-up max-h-[90vh] overflow-y-auto">
+        <div id="modal-content" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 pb-12 slide-up max-h-[90dvh] overflow-y-auto">
             <!-- Modal Body -->
         </div>
     </div>
@@ -161,7 +162,6 @@
             cost_km: 'Cost / km', total_dist: 'Total Dist',
             edit_vehicle: 'Edit Vehicle', edit_record: 'Edit Record',
             save_changes: 'Save Changes', cancel: 'Cancel', delete: 'Delete',
-            // New translations for Reminders
             license_exp: 'License Expiry', license_cost: 'Renewal Cost',
             insurance_exp: 'Insurance Expiry', insurance_cost: 'Renewal Cost',
             reminders: 'Reminders', expired: 'Expired', days_left: 'days left',
@@ -196,7 +196,6 @@
             cost_km: '每公里成本', total_dist: '總里程',
             edit_vehicle: '編輯車輛', edit_record: '編輯紀錄',
             save_changes: '保存修改', cancel: '取消', delete: '刪除',
-            // New translations for Reminders
             license_exp: '車牌到期日期', license_cost: '車牌續期費用',
             insurance_exp: '保險到期日期', insurance_cost: '保險續期費用',
             reminders: '提醒通知', expired: '已過期', days_left: '天後到期',
@@ -211,12 +210,12 @@
         dashboardFilter: 'month', // 'month' | 'year' | 'all'
         data: {
             vehicles: [],
-            logs: [], // Array of { id, vehicleId, type: 'fuel'|'service'|'parking', date, odometer, cost, ...details }
+            logs: [], 
             settings: {
                 activeVehicleId: null,
-                unitSystem: 'metric', // 'metric' (L, km) or 'imperial' (Gal, mi)
+                unitSystem: 'metric', 
                 currency: '$',
-                language: 'en' // 'en' or 'zh'
+                language: 'en' 
             }
         },
         
@@ -225,12 +224,10 @@
             if (saved) {
                 this.data = JSON.parse(saved);
             }
-            // Set default active vehicle if needed
             if (this.data.vehicles.length > 0 && !this.data.settings.activeVehicleId) {
                 this.data.settings.activeVehicleId = this.data.vehicles[0].id;
                 this.save();
             }
-            // Ensure language default exists
             if (!this.data.settings.language) {
                 this.data.settings.language = 'en';
                 this.save();
@@ -261,13 +258,11 @@
 
         addLog(log) {
             log.id = Date.now().toString();
-            // Update vehicle odometer if this log has higher mileage
             const v = this.getVehicle(log.vehicleId);
             if (v && log.odometer > v.currentOdometer) {
                 v.currentOdometer = parseInt(log.odometer);
             }
             this.data.logs.push(log);
-            // Sort logs by date desc
             this.data.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
             this.save();
         },
@@ -276,12 +271,10 @@
             const index = this.data.logs.findIndex(l => l.id === updatedLog.id);
             if (index !== -1) {
                 this.data.logs[index] = updatedLog;
-                // Update vehicle odometer if needed
                 const v = this.getVehicle(updatedLog.vehicleId);
                 if (v && updatedLog.odometer > v.currentOdometer) {
                     v.currentOdometer = parseInt(updatedLog.odometer);
                 }
-                // Re-sort logs
                 this.data.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
                 this.save();
             }
@@ -325,7 +318,6 @@
         importData(jsonStr) {
             try {
                 const data = JSON.parse(jsonStr);
-                // Basic validation
                 if (!Array.isArray(data.vehicles) || !Array.isArray(data.logs) || !data.settings) {
                     return false;
                 }
@@ -357,22 +349,13 @@
             return `${parseFloat(vol || 0).toFixed(1)} ${unit}`;
         },
         calculateStats(vehicleId, timeRange = 'month') {
-            // 1. Determine Date Range
             const now = new Date();
-            let startDate = new Date(0); // Default ALL
-            
-            if (timeRange === 'month') {
-                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-            } else if (timeRange === 'year') {
-                startDate = new Date(now.getFullYear(), 0, 1);
-            }
+            let startDate = new Date(0);
+            if (timeRange === 'month') startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            else if (timeRange === 'year') startDate = new Date(now.getFullYear(), 0, 1);
 
-            // 2. Filter Logs for Total Cost (Fuel + Service + Parking)
             const allLogs = store.getLogs(vehicleId).filter(l => new Date(l.date) >= startDate);
             const totalCost = allLogs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
-
-            // 3. Filter Logs for Efficiency & Distance (Fuel Only)
-            // We sort by odometer asc to find range
             const fuelLogs = allLogs.filter(l => l.type === 'fuel').sort((a, b) => a.odometer - b.odometer);
 
             let totalDist = 0;
@@ -388,22 +371,19 @@
 
             if (totalDist > 0 && totalVol > 0) {
                 if (store.data.settings.unitSystem === 'metric') {
-                    // L/100km
                     const l100 = (totalVol / totalDist) * 100;
                     efficiency = `${l100.toFixed(1)} L/100km`;
                     costPerKm = `${store.data.settings.currency}${(totalCost / totalDist).toFixed(2)}/km`;
                 } else {
-                    // MPG
                     const mpg = totalDist / totalVol; 
                     efficiency = `${mpg.toFixed(1)} MPG`;
                     costPerKm = `${store.data.settings.currency}${(totalCost / totalDist).toFixed(2)}/mi`;
                 }
             }
-
             return { efficiency, costPerKm, totalCost, totalDist };
         },
         async getCurrentLocation() {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 if (!navigator.geolocation) resolve(null);
                 navigator.geolocation.getCurrentPosition(
                     (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
@@ -422,7 +402,6 @@
         }
     };
 
-    // Alias for translation
     const t = utils.t;
 
     /**
@@ -432,8 +411,6 @@
         current: 'dashboard',
         navigate(route) {
             this.current = route;
-            
-            // Update Nav Icons
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('text-primary');
                 btn.classList.add('text-slate-400');
@@ -444,16 +421,15 @@
                 activeBtn.classList.add('text-primary');
             }
 
-            // Update Nav Text (Language Support)
             document.getElementById('nav-txt-dashboard').textContent = t('nav_dash');
             document.getElementById('nav-txt-fuel').textContent = t('nav_fuel');
             document.getElementById('nav-txt-service').textContent = t('nav_service');
             document.getElementById('nav-txt-stats').textContent = t('nav_stats');
             document.getElementById('nav-txt-settings').textContent = t('nav_settings');
 
-            // Render View
             const main = document.getElementById('main-content');
-            main.innerHTML = ''; // Clear
+            main.innerHTML = ''; 
+            window.scrollTo(0, 0); // Reset scroll
             
             switch(route) {
                 case 'dashboard': ui.renderDashboard(main); break;
@@ -473,9 +449,8 @@
         renderDashboard(container) {
             const activeCar = store.getActiveVehicle();
             
-            // Header
             let html = `
-                <div class="relative bg-gradient-to-br from-teal-500 to-blue-600 text-white pt-safe pb-16 rounded-b-[2.5rem] shadow-lg">
+                <div class="relative bg-gradient-to-br from-teal-500 to-blue-600 text-white pt-[calc(env(safe-area-inset-top)+20px)] pb-16 rounded-b-[2.5rem] shadow-lg">
                     <div class="px-6 mb-6 flex justify-between items-center">
                         <div>
                             <p class="text-teal-100 text-sm font-medium">${t('welcome')}</p>
@@ -502,45 +477,36 @@
 
             const stats = utils.calculateStats(activeCar.id, store.dashboardFilter);
 
-            // Filter Pills
             html += `
                 </div>
                 
-                <!-- Time Range Filter -->
                 <div class="flex justify-center gap-2 mb-4 px-6 -mt-14 relative z-10">
                     <button onclick="ui.setDashFilter('month')" class="px-4 py-1.5 rounded-full text-xs font-bold transition shadow-sm ${store.dashboardFilter === 'month' ? 'bg-white text-teal-600' : 'bg-white/30 text-white backdrop-blur-md hover:bg-white/40'}">${t('range_month')}</button>
                     <button onclick="ui.setDashFilter('year')" class="px-4 py-1.5 rounded-full text-xs font-bold transition shadow-sm ${store.dashboardFilter === 'year' ? 'bg-white text-teal-600' : 'bg-white/30 text-white backdrop-blur-md hover:bg-white/40'}">${t('range_year')}</button>
                     <button onclick="ui.setDashFilter('all')" class="px-4 py-1.5 rounded-full text-xs font-bold transition shadow-sm ${store.dashboardFilter === 'all' ? 'bg-white text-teal-600' : 'bg-white/30 text-white backdrop-blur-md hover:bg-white/40'}">${t('range_all')}</button>
                 </div>
 
-                <!-- Reminders Section -->
                 ${this.renderReminders(activeCar)}
 
-                <!-- 2x2 Stats Grid -->
                 <div class="grid grid-cols-2 gap-3 px-4 mb-8">
-                    <!-- 1. Efficiency -->
                     <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('efficiency')}</p>
                         <p class="text-xl font-bold text-teal-600 mt-1">${stats.efficiency}</p>
                     </div>
-                    <!-- 2. Cost / Km -->
                     <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('cost_km')}</p>
                         <p class="text-xl font-bold text-blue-500 mt-1">${stats.costPerKm}</p>
                     </div>
-                    <!-- 3. Total Spent -->
                     <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('total_spent')}</p>
                         <p class="text-xl font-bold text-slate-800 mt-1">${utils.formatCurrency(stats.totalCost)}</p>
                     </div>
-                    <!-- 4. Total Distance -->
                     <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('total_dist')}</p>
                         <p class="text-xl font-bold text-slate-800 mt-1">${utils.formatDist(stats.totalDist)}</p>
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
                 <div class="px-6 mb-8">
                     <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">${t('quick_actions')}</h3>
                     <div class="flex gap-4">
@@ -555,8 +521,7 @@
                     </div>
                 </div>
                 
-                <!-- Recent Activity -->
-                <div class="px-6 pb-24">
+                <div class="px-6 pb-6">
                      <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">${t('recent_activity')}</h3>
                      ${this.renderRecentList(activeCar.id)}
                 </div>
@@ -567,29 +532,11 @@
         renderReminders(car) {
             const licDays = utils.getDaysLeft(car.licenseDate);
             const insDays = utils.getDaysLeft(car.insuranceDate);
-            
             if (licDays === null && insDays === null) return '';
 
             const items = [];
-            
-            if (licDays !== null) {
-                items.push({
-                    type: t('license_exp'),
-                    days: licDays,
-                    cost: car.licenseCost,
-                    icon: '📄'
-                });
-            }
-            if (insDays !== null) {
-                items.push({
-                    type: t('insurance_exp'),
-                    days: insDays,
-                    cost: car.insuranceCost,
-                    icon: '🛡️'
-                });
-            }
-
-            // Sort by urgency (days ascending)
+            if (licDays !== null) items.push({ type: t('license_exp'), days: licDays, cost: car.licenseCost, icon: '📄' });
+            if (insDays !== null) items.push({ type: t('insurance_exp'), days: insDays, cost: car.insuranceCost, icon: '🛡️' });
             items.sort((a, b) => a.days - b.days);
 
             let html = `<div class="px-6 mb-6"><div class="bg-white rounded-2xl card-shadow overflow-hidden">
@@ -603,24 +550,10 @@
 
             items.forEach(item => {
                 let bgClass, textClass, statusText;
-                
-                if (item.days < 0) {
-                    bgClass = 'bg-red-50 border-red-100';
-                    textClass = 'text-red-600';
-                    statusText = t('expired');
-                } else if (item.days <= 15) {
-                    bgClass = 'bg-red-50 border-red-100';
-                    textClass = 'text-red-600';
-                    statusText = `${item.days} ${t('days_left')}`;
-                } else if (item.days <= 30) {
-                    bgClass = 'bg-yellow-50 border-yellow-100';
-                    textClass = 'text-yellow-600';
-                    statusText = `${item.days} ${t('days_left')}`;
-                } else {
-                    bgClass = 'bg-emerald-50 border-emerald-100';
-                    textClass = 'text-emerald-600';
-                    statusText = `${item.days} ${t('days_left')}`;
-                }
+                if (item.days < 0) { bgClass = 'bg-red-50 border-red-100'; textClass = 'text-red-600'; statusText = t('expired'); }
+                else if (item.days <= 15) { bgClass = 'bg-red-50 border-red-100'; textClass = 'text-red-600'; statusText = `${item.days} ${t('days_left')}`; }
+                else if (item.days <= 30) { bgClass = 'bg-yellow-50 border-yellow-100'; textClass = 'text-yellow-600'; statusText = `${item.days} ${t('days_left')}`; }
+                else { bgClass = 'bg-emerald-50 border-emerald-100'; textClass = 'text-emerald-600'; statusText = `${item.days} ${t('days_left')}`; }
 
                 html += `
                     <div onclick="ui.openAddVehicle('${car.id}')" class="${bgClass} border rounded-xl p-3 mb-2 last:mb-0 flex items-center justify-between transition active:opacity-70 cursor-pointer">
@@ -639,7 +572,6 @@
                     </div>
                 `;
             });
-
             html += `</div></div></div>`;
             return html;
         },
@@ -649,23 +581,10 @@
             if (logs.length === 0) return `<p class="text-slate-400 text-sm italic">${t('no_logs')}</p>`;
             
             return logs.map(log => {
-                let icon = '';
-                let color = '';
-                let typeLabel = '';
-                let editFn = '';
-
-                if(log.type === 'fuel') { 
-                    icon = '⛽️'; color='bg-teal-50 text-teal-600'; typeLabel = t('fuel'); 
-                    editFn = `ui.openAddFuel('${log.id}')`;
-                }
-                if(log.type === 'service') { 
-                    icon = '🔧'; color='bg-orange-50 text-orange-600'; typeLabel = t('service'); 
-                    editFn = `ui.openAddService('${log.id}')`;
-                }
-                if(log.type === 'parking') { 
-                    icon = '🅿️'; color='bg-blue-50 text-blue-600'; typeLabel = t('parking'); 
-                    editFn = `ui.openAddService('${log.id}')`;
-                }
+                let icon = '', color = '', typeLabel = '', editFn = '';
+                if(log.type === 'fuel') { icon = '⛽️'; color='bg-teal-50 text-teal-600'; typeLabel = t('fuel'); editFn = `ui.openAddFuel('${log.id}')`; }
+                if(log.type === 'service') { icon = '🔧'; color='bg-orange-50 text-orange-600'; typeLabel = t('service'); editFn = `ui.openAddService('${log.id}')`; }
+                if(log.type === 'parking') { icon = '🅿️'; color='bg-blue-50 text-blue-600'; typeLabel = t('parking'); editFn = `ui.openAddService('${log.id}')`; }
 
                 return `
                 <div class="bg-white p-4 rounded-xl border border-slate-100 mb-3 flex items-center justify-between shadow-sm">
@@ -679,9 +598,7 @@
                     <div class="flex items-center gap-3">
                         <p class="font-bold text-slate-800">${utils.formatCurrency(log.cost)}</p>
                         <button onclick="${editFn}" class="text-slate-300 hover:text-teal-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
                         </button>
                     </div>
                 </div>
@@ -692,39 +609,31 @@
         renderFuel(container) {
             const activeCar = store.getActiveVehicle();
             if(!activeCar) return this.renderNoCar(container);
-
-            // 1. Get Logs
-            let logs = store.getLogs(activeCar.id, 'fuel');
-            // 2. Sort Descending by Odometer
-            logs.sort((a, b) => b.odometer - a.odometer);
-
+            let logs = store.getLogs(activeCar.id, 'fuel').sort((a, b) => b.odometer - a.odometer);
             const unitVol = store.data.settings.unitSystem === 'metric' ? 'L' : 'Gal';
             const unitDist = store.data.settings.unitSystem === 'metric' ? 'km' : 'mi';
             const currency = store.data.settings.currency;
             const isMetric = store.data.settings.unitSystem === 'metric';
 
             container.innerHTML = `
-                <div class="pt-safe px-6 pb-4 flex justify-between items-end bg-white border-b border-slate-100 sticky top-0 z-10">
+                <div class="pt-[max(20px,env(safe-area-inset-top))] px-6 pb-4 flex justify-between items-end bg-white border-b border-slate-100 sticky top-0 z-40">
                     <h1 class="text-3xl font-bold text-slate-800">${t('title_fuel')}</h1>
                     <button onclick="ui.openAddFuel()" class="bg-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md">+</button>
                 </div>
-                <div class="p-4 space-y-3 pb-safe">
+                <div class="p-4 space-y-3">
                     ${logs.length ? logs.map((log, index) => {
                         const unitPrice = log.liters > 0 ? (log.cost / log.liters).toFixed(2) : '0.00';
                         let statsHtml = `<div class="text-xs text-slate-400 italic text-center py-2">${t('waiting_data')}</div>`;
-                        
                         if (index < logs.length - 1) {
                             const prevLog = logs[index + 1];
                             const dist = log.odometer - prevLog.odometer;
                             const vol = parseFloat(log.liters);
                             const cost = parseFloat(log.cost);
-
                             if (dist > 0 && vol > 0) {
                                 let metrics = [];
                                 const l100 = (vol / dist) * 100;
                                 const kmL = dist / vol;
                                 const costPerDist = cost / dist;
-
                                 if (isMetric) {
                                     metrics.push({ label: 'L/100km', val: l100.toFixed(1) });
                                     metrics.push({ label: `${currency}/${unitDist}`, val: costPerDist.toFixed(2) });
@@ -734,35 +643,23 @@
                                     metrics.push({ label: 'km/L', val: kmL.toFixed(1) });
                                     metrics.push({ label: `${currency}/${unitDist}`, val: costPerDist.toFixed(2) });
                                 }
-
                                 statsHtml = `
                                     <div class="grid grid-cols-${metrics.length} gap-2 mt-3 pt-3 border-t border-slate-100">
-                                        ${metrics.map(m => `
-                                            <div class="text-center">
-                                                <div class="text-[10px] text-slate-400 uppercase font-bold">${m.label}</div>
-                                                <div class="text-sm font-bold text-teal-600">${m.val}</div>
-                                            </div>
-                                        `).join('')}
+                                        ${metrics.map(m => `<div class="text-center"><div class="text-[10px] text-slate-400 uppercase font-bold">${m.label}</div><div class="text-sm font-bold text-teal-600">${m.val}</div></div>`).join('')}
                                     </div>
                                     <div class="text-[10px] text-slate-300 text-center mt-1">+${dist} ${unitDist} ${t('prev_dist')}</div>
                                 `;
                             }
                         }
-
                         return `
                         <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col gap-1 relative overflow-hidden">
                             <div class="flex justify-between items-start">
                                 <span class="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-md">${new Date(log.date).toLocaleDateString()}</span>
                                 <div class="flex items-center gap-2">
                                     <span class="font-bold text-lg text-slate-800">${utils.formatCurrency(log.cost)}</span>
-                                    <button onclick="ui.openAddFuel('${log.id}')" class="text-slate-300 hover:text-teal-600 p-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                                        </svg>
-                                    </button>
+                                    <button onclick="ui.openAddFuel('${log.id}')" class="text-slate-300 hover:text-teal-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg></button>
                                 </div>
                             </div>
-                            
                             <div class="flex justify-between items-center mt-1">
                                 <div class="text-xs text-slate-500">
                                     <span class="font-bold text-slate-700">${utils.formatFuel(log.liters)}</span>
@@ -780,15 +677,14 @@
         renderMaintenance(container) {
             const activeCar = store.getActiveVehicle();
             if(!activeCar) return this.renderNoCar(container);
-            
             const logs = store.getLogs(activeCar.id).filter(l => l.type === 'service' || l.type === 'parking');
 
             container.innerHTML = `
-                <div class="pt-safe px-6 pb-4 flex justify-between items-end bg-white border-b border-slate-100 sticky top-0 z-10">
+                <div class="pt-[max(20px,env(safe-area-inset-top))] px-6 pb-4 flex justify-between items-end bg-white border-b border-slate-100 sticky top-0 z-40">
                     <h1 class="text-3xl font-bold text-slate-800">${t('title_service')}</h1>
                     <button onclick="ui.openAddService()" class="bg-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md">+</button>
                 </div>
-                <div class="p-4 space-y-3 pb-safe">
+                <div class="p-4 space-y-3">
                     ${logs.length ? logs.map(log => `
                         <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative">
                             <div class="flex gap-3">
@@ -800,11 +696,7 @@
                                         <h4 class="font-bold text-slate-800 capitalize">${log.note || (log.type === 'service' ? t('service') : t('parking'))}</h4>
                                         <div class="flex items-center gap-2">
                                             <span class="font-bold text-slate-800">${utils.formatCurrency(log.cost)}</span>
-                                            <button onclick="ui.openAddService('${log.id}')" class="text-slate-300 hover:text-teal-600 p-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                                                </svg>
-                                            </button>
+                                            <button onclick="ui.openAddService('${log.id}')" class="text-slate-300 hover:text-teal-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg></button>
                                         </div>
                                     </div>
                                     <p class="text-xs text-slate-500 mt-1">${new Date(log.date).toLocaleDateString()} • ${log.type === 'parking' && log.location ? log.location : utils.formatDist(log.odometer)}</p>
@@ -821,49 +713,30 @@
              if(!activeCar) return this.renderNoCar(container);
 
              container.innerHTML = `
-                 <div class="pt-safe px-6 pb-4 bg-white sticky top-0 z-10">
+                 <div class="pt-[max(20px,env(safe-area-inset-top))] px-6 pb-4 bg-white sticky top-0 z-40">
                      <h1 class="text-3xl font-bold text-slate-800">${t('title_analytics')}</h1>
                  </div>
-                 <div class="p-4 pb-safe space-y-6">
-                     <!-- Fixed Costs Card -->
+                 <div class="p-4 space-y-6">
                      <div class="bg-white p-4 rounded-2xl card-shadow flex justify-between items-center">
-                         <div>
-                             <h3 class="text-sm font-bold text-slate-400 uppercase">${t('fixed_costs')}</h3>
-                             <p class="text-[10px] text-slate-400 mt-1">(${t('license_cost')} + ${t('insurance_cost')})</p>
-                         </div>
-                         <div class="text-2xl font-bold text-slate-800">
-                            ${utils.formatCurrency((parseFloat(activeCar.licenseCost)||0) + (parseFloat(activeCar.insuranceCost)||0))}
-                         </div>
+                         <div><h3 class="text-sm font-bold text-slate-400 uppercase">${t('fixed_costs')}</h3><p class="text-[10px] text-slate-400 mt-1">(${t('license_cost')} + ${t('insurance_cost')})</p></div>
+                         <div class="text-2xl font-bold text-slate-800">${utils.formatCurrency((parseFloat(activeCar.licenseCost)||0) + (parseFloat(activeCar.insuranceCost)||0))}</div>
                      </div>
-
-                     <!-- Cost Card -->
                      <div class="bg-white p-4 rounded-2xl card-shadow">
                          <h3 class="text-sm font-bold text-slate-400 uppercase mb-4">${t('expense_breakdown')}</h3>
-                         <div class="h-48 w-full">
-                             <canvas id="costChart"></canvas>
-                         </div>
+                         <div class="h-48 w-full"><canvas id="costChart"></canvas></div>
                      </div>
-                     
-                     <!-- Efficiency Trend -->
                      <div class="bg-white p-4 rounded-2xl card-shadow">
                          <h3 class="text-sm font-bold text-slate-400 uppercase mb-4">${t('fuel_eff_trend')}</h3>
-                         <div class="h-48 w-full">
-                            <canvas id="effChart"></canvas>
-                         </div>
+                         <div class="h-48 w-full"><canvas id="effChart"></canvas></div>
                      </div>
                  </div>
              `;
-
-             setTimeout(() => {
-                 this.renderCharts(activeCar.id);
-             }, 100);
+             setTimeout(() => this.renderCharts(activeCar.id), 100);
         },
         
         renderCharts(vid) {
             const logs = store.getLogs(vid);
             const fuelLogs = logs.filter(l => l.type === 'fuel').sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            // PIE CHART
             const fuelCost = fuelLogs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
             const serviceCost = logs.filter(l => l.type === 'service').reduce((sum, l) => sum + parseFloat(l.cost), 0);
             const parkingCost = logs.filter(l => l.type === 'parking').reduce((sum, l) => sum + parseFloat(l.cost), 0);
@@ -872,64 +745,36 @@
                 type: 'doughnut',
                 data: {
                     labels: [t('fuel'), t('service'), t('parking')],
-                    datasets: [{
-                        data: [fuelCost, serviceCost, parkingCost],
-                        backgroundColor: ['#0d9488', '#f97316', '#3b82f6'],
-                        borderWidth: 0
-                    }]
+                    datasets: [{ data: [fuelCost, serviceCost, parkingCost], backgroundColor: ['#0d9488', '#f97316', '#3b82f6'], borderWidth: 0 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right' } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
             });
 
-            // LINE CHART (Efficiency)
             const dataPoints = [];
             const labels = [];
-            
             for (let i = 1; i < fuelLogs.length; i++) {
                 const dist = fuelLogs[i].odometer - fuelLogs[i-1].odometer;
                 const vol = parseFloat(fuelLogs[i].liters);
                 if(dist > 0 && vol > 0) {
                     labels.push(new Date(fuelLogs[i].date).toLocaleDateString(undefined, {month:'short', day:'numeric'}));
-                    const val = (vol / dist) * 100;
-                    dataPoints.push(val);
+                    dataPoints.push((vol / dist) * 100);
                 }
             }
 
             new Chart(document.getElementById('effChart'), {
                 type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'L/100km',
-                        data: dataPoints,
-                        borderColor: '#0d9488',
-                        backgroundColor: 'rgba(13, 148, 136, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: false } }
-                }
+                data: { labels: labels, datasets: [{ label: 'L/100km', data: dataPoints, borderColor: '#0d9488', backgroundColor: 'rgba(13, 148, 136, 0.1)', fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false } } }
             });
         },
 
         renderSettings(container) {
             const vehicles = store.data.vehicles;
-            
             container.innerHTML = `
-                <div class="pt-safe px-6 pb-6 bg-gradient-to-br from-slate-800 to-slate-900 text-white sticky top-0 z-10">
+                <div class="pt-[calc(env(safe-area-inset-top)+20px)] px-6 pb-6 bg-gradient-to-br from-slate-800 to-slate-900 text-white sticky top-0 z-40">
                     <h1 class="text-3xl font-bold">${t('title_settings')}</h1>
                 </div>
-                <div class="p-4 space-y-6 pb-safe">
-                    <!-- Vehicles Section -->
+                <div class="p-4 space-y-6">
                     <section>
                         <div class="flex justify-between items-center mb-2 px-2">
                             <h3 class="text-xs font-bold text-slate-400 uppercase">${t('vehicle_details')}</h3>
@@ -943,26 +788,16 @@
                                         <p class="text-xs text-slate-400">${utils.formatDist(v.currentOdometer)}</p>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        ${v.id === store.data.settings.activeVehicleId ? 
-                                            '<div class="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>' : 
-                                            '<div class="w-6 h-6 rounded-full border border-slate-200"></div>'}
-                                        
-                                        <button onclick="ui.openAddVehicle('${v.id}')" class="text-slate-300 hover:text-teal-600 p-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                                            </svg>
-                                        </button>
+                                        ${v.id === store.data.settings.activeVehicleId ? '<div class="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>' : '<div class="w-6 h-6 rounded-full border border-slate-200"></div>'}
+                                        <button onclick="ui.openAddVehicle('${v.id}')" class="text-slate-300 hover:text-teal-600 p-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg></button>
                                     </div>
                                 </div>
                             `).join('')}
                         </div>
                     </section>
-                    
-                    <!-- Preferences -->
                     <section>
                         <h3 class="text-xs font-bold text-slate-400 uppercase mb-2 px-2">${t('preferences')}</h3>
                         <div class="bg-white rounded-xl overflow-hidden shadow-sm">
-                            <!-- Language -->
                             <div class="p-4 border-b border-slate-100 flex justify-between items-center">
                                 <span>${t('language')}</span>
                                 <select onchange="ui.updateSetting('language', this.value)" class="bg-slate-100 rounded-md px-2 py-1 text-sm outline-none text-right rtl">
@@ -970,7 +805,6 @@
                                     <option value="zh" ${store.data.settings.language === 'zh' ? 'selected' : ''}>繁體中文</option>
                                 </select>
                             </div>
-
                              <div class="p-4 border-b border-slate-100 flex justify-between items-center">
                                 <span>${t('currency')}</span>
                                 <select onchange="ui.updateSetting('currency', this.value)" class="bg-slate-100 rounded-md px-2 py-1 text-sm outline-none">
@@ -991,8 +825,6 @@
                             </div>
                         </div>
                     </section>
-
-                    <!-- Data -->
                     <section>
                         <h3 class="text-xs font-bold text-slate-400 uppercase mb-2 px-2">${t('data')}</h3>
                         <div class="bg-white rounded-xl overflow-hidden shadow-sm">
@@ -1003,10 +835,7 @@
                             </div>
                         </div>
                     </section>
-
-                    <div class="text-center text-xs text-slate-300 mt-8">
-                        FuelMate v1.3.0<br>Offline PWA
-                    </div>
+                    <div class="text-center text-xs text-slate-300 mt-8">FuelMate v1.3.1<br>Offline PWA</div>
                 </div>
             `;
         },
@@ -1014,16 +843,10 @@
         handleImport(input) {
             const file = input.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
             reader.onload = (e) => {
-                const success = store.importData(e.target.result);
-                if (success) {
-                    alert(t('import_success'));
-                    router.navigate('dashboard');
-                } else {
-                    alert(t('import_error'));
-                }
+                if (store.importData(e.target.result)) { alert(t('import_success')); router.navigate('dashboard'); }
+                else { alert(t('import_error')); }
             };
             reader.readAsText(file);
             input.value = '';
@@ -1031,7 +854,7 @@
 
         renderNoCar(container) {
             container.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full p-8 text-center">
+                <div class="flex flex-col items-center justify-center h-full p-8 text-center mt-20">
                     <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6 text-4xl">🚗</div>
                     <h2 class="text-2xl font-bold text-slate-800 mb-2">${t('no_vehicle')}</h2>
                     <p class="text-slate-500 mb-6">${t('no_vehicle_desc')}</p>
@@ -1040,165 +863,81 @@
             `;
         },
 
-        // --- MODALS & ACTIONS ---
-        
-        closeModal() {
-            const el = document.getElementById('modal-container');
-            el.classList.add('hidden');
-        },
+        closeModal() { document.getElementById('modal-container').classList.add('hidden'); },
 
         openAddVehicle(id = null) {
-            const el = document.getElementById('modal-container');
             const content = document.getElementById('modal-content');
-            
-            let vehicle = { 
-                make: '', model: '', year: '', currentOdometer: '',
-                licenseDate: '', licenseCost: '', insuranceDate: '', insuranceCost: '' 
-            };
-            let title = t('add_vehicle');
-            let btnText = t('save_vehicle');
-            let hiddenId = '';
-            let deleteBtn = '';
+            let vehicle = { make: '', model: '', year: '', currentOdometer: '', licenseDate: '', licenseCost: '', insuranceDate: '', insuranceCost: '' };
+            let title = t('add_vehicle'), btnText = t('save_vehicle'), hiddenId = '';
 
             if (id) {
-                vehicle = store.getVehicle(id);
-                // Ensure fields exist
-                vehicle.licenseDate = vehicle.licenseDate || '';
-                vehicle.licenseCost = vehicle.licenseCost || '';
-                vehicle.insuranceDate = vehicle.insuranceDate || '';
-                vehicle.insuranceCost = vehicle.insuranceCost || '';
-                
-                title = t('edit_vehicle');
-                btnText = t('save_changes');
-                hiddenId = `<input type="hidden" name="id" value="${id}">`;
+                vehicle = store.getVehicle(id) || vehicle;
+                title = t('edit_vehicle'); btnText = t('save_changes'); hiddenId = `<input type="hidden" name="id" value="${id}">`;
             }
 
             content.innerHTML = `
                 <h2 class="text-xl font-bold mb-6">${title}</h2>
                 <form onsubmit="ui.submitVehicle(event)" class="space-y-4">
                     ${hiddenId}
-                    <!-- Basic Info -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('make')}</label>
-                        <input type="text" name="make" required value="${vehicle.make}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('vehicle_placeholder_make')}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('model')}</label>
-                        <input type="text" name="model" required value="${vehicle.model}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('vehicle_placeholder_model')}">
-                    </div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('make')}</label><input type="text" name="make" required value="${vehicle.make}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('vehicle_placeholder_make')}"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('model')}</label><input type="text" name="model" required value="${vehicle.model}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('vehicle_placeholder_model')}"></div>
                     <div class="grid grid-cols-2 gap-4">
-                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('year')}</label>
-                            <input type="number" name="year" required value="${vehicle.year}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="2023">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('odometer')}</label>
-                            <input type="number" name="odometer" required value="${vehicle.currentOdometer}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0">
-                        </div>
+                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('year')}</label><input type="number" name="year" required value="${vehicle.year}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="2023"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('odometer')}</label><input type="number" name="odometer" required value="${vehicle.currentOdometer}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0"></div>
                     </div>
-                    
-                    <!-- Fixed Costs & Expiry -->
                     <div class="pt-4 border-t border-slate-100">
                         <h3 class="text-sm font-bold text-slate-700 mb-3">${t('section_fixed')}</h3>
-                        <!-- License -->
                         <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('license_exp')}</label>
-                                <input type="date" name="licenseDate" value="${vehicle.licenseDate}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('license_cost')}</label>
-                                <input type="number" step="0.01" name="licenseCost" value="${vehicle.licenseCost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500">
-                            </div>
+                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('license_exp')}</label><input type="date" name="licenseDate" value="${vehicle.licenseDate}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"></div>
+                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('license_cost')}</label><input type="number" step="0.01" name="licenseCost" value="${vehicle.licenseCost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"></div>
                         </div>
-                        <!-- Insurance -->
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('insurance_exp')}</label>
-                                <input type="date" name="insuranceDate" value="${vehicle.insuranceDate}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('insurance_cost')}</label>
-                                <input type="number" step="0.01" name="insuranceCost" value="${vehicle.insuranceCost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500">
-                            </div>
+                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('insurance_exp')}</label><input type="date" name="insuranceDate" value="${vehicle.insuranceDate}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"></div>
+                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${t('insurance_cost')}</label><input type="number" step="0.01" name="insuranceCost" value="${vehicle.insuranceCost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"></div>
                         </div>
                     </div>
-
                     <div class="flex gap-3 mt-6">
                         <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
                         <button type="submit" class="flex-[2] bg-teal-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/30">${btnText}</button>
                     </div>
                 </form>
             `;
-            el.classList.remove('hidden');
+            document.getElementById('modal-container').classList.remove('hidden');
         },
 
         async openAddFuel(id = null) {
             const activeCar = store.getActiveVehicle();
             if (!activeCar) return this.openAddVehicle();
-
             let log = { date: new Date().toISOString().split('T')[0], odometer: activeCar.currentOdometer, liters: '', cost: '', location: '', unitPrice: '' };
-            let title = t('log_fuel');
-            let btnText = t('save_log');
-            let hiddenId = '';
-            let deleteBtn = '';
+            let title = t('log_fuel'), btnText = t('save_log'), hiddenId = '', deleteBtn = '';
 
             if (id) {
                 log = store.getLog(id);
-                log.date = new Date(log.date).toISOString().split('T')[0]; // Format date input
-                title = t('edit_record');
-                btnText = t('save_changes');
-                hiddenId = `<input type="hidden" name="id" value="${id}">`;
+                log.date = new Date(log.date).toISOString().split('T')[0];
+                title = t('edit_record'); btnText = t('save_changes'); hiddenId = `<input type="hidden" name="id" value="${id}">`;
                 if (log.liters > 0) log.unitPrice = (log.cost / log.liters).toFixed(2);
                 deleteBtn = `<button type="button" onclick="ui.deleteLogAndClose('${id}')" class="flex-1 bg-red-50 text-red-500 font-bold py-4 rounded-xl">${t('delete')}</button>`;
             } else {
-                // Get location for new log only
                 let loc = await utils.getCurrentLocation();
                 if(loc) log.location = `${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
             }
-
             const isMetric = store.data.settings.unitSystem === 'metric';
             const unitLabel = isMetric ? t('price_per_unit_l') : t('price_per_unit_g');
 
-            const el = document.getElementById('modal-container');
-            const content = document.getElementById('modal-content');
-            content.innerHTML = `
-                <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-                    <span class="bg-teal-100 text-teal-600 p-2 rounded-lg">⛽️</span> ${title}
-                </h2>
+            document.getElementById('modal-content').innerHTML = `
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><span class="bg-teal-100 text-teal-600 p-2 rounded-lg">⛽️</span> ${title}</h2>
                 <form onsubmit="ui.submitLog(event, 'fuel')" class="space-y-4">
                     ${hiddenId}
                     <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('date')}</label>
-                            <input type="date" name="date" required value="${log.date}" class="w-full bg-slate-100 p-3 rounded-xl outline-none">
-                        </div>
-                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('odometer')}</label>
-                            <input type="number" name="odometer" required value="${log.odometer}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500">
-                        </div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('date')}</label><input type="date" name="date" required value="${log.date}" class="w-full bg-slate-100 p-3 rounded-xl outline-none"></div>
+                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('odometer')}</label><input type="number" name="odometer" required value="${log.odometer}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"></div>
                     </div>
-                    
                     <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('volume')} (${isMetric ? 'L' : 'Gal'})</label>
-                            <input type="number" step="0.01" name="liters" value="${log.liters}" oninput="ui.calcFuel('vol')" required class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${unitLabel}</label>
-                            <input type="number" step="0.01" name="unitPrice" value="${log.unitPrice}" oninput="ui.calcFuel('price')" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00">
-                        </div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('volume')} (${isMetric ? 'L' : 'Gal'})</label><input type="number" step="0.01" name="liters" value="${log.liters}" oninput="ui.calcFuel('vol')" required class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${unitLabel}</label><input type="number" step="0.01" name="unitPrice" value="${log.unitPrice}" oninput="ui.calcFuel('price')" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
                     </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('cost')}</label>
-                        <input type="number" step="0.01" name="cost" value="${log.cost}" oninput="ui.calcFuel('cost')" required class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00">
-                    </div>
-                    
-                    <div>
-                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label>
-                         <input type="text" name="location" value="${log.location}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('location_placeholder')}">
-                    </div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('cost')}</label><input type="number" step="0.01" name="cost" value="${log.cost}" oninput="ui.calcFuel('cost')" required class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label><input type="text" name="location" value="${log.location}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('location_placeholder')}"></div>
                     <div class="flex gap-3 mt-4">
                         ${deleteBtn}
                         <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
@@ -1206,88 +945,40 @@
                     </div>
                 </form>
             `;
-            el.classList.remove('hidden');
+            document.getElementById('modal-container').classList.remove('hidden');
         },
 
         calcFuel(field) {
-            const volInput = document.getElementsByName('liters')[0];
-            const costInput = document.getElementsByName('cost')[0];
-            const priceInput = document.getElementsByName('unitPrice')[0];
-
-            const vol = parseFloat(volInput.value) || 0;
-            const cost = parseFloat(costInput.value) || 0;
-            const price = parseFloat(priceInput.value) || 0;
-
-            // 1. Change Volume
-            if (field === 'vol') {
-                if (price > 0) {
-                    costInput.value = (vol * price).toFixed(2);
-                } else if (cost > 0) {
-                    priceInput.value = (cost / vol).toFixed(2);
-                }
-            }
-            // 2. Change Price
-            else if (field === 'price') {
-                if (vol > 0) {
-                    costInput.value = (vol * price).toFixed(2);
-                }
-            }
-            // 3. Change Cost
-            else if (field === 'cost') {
-                if (vol > 0) {
-                    priceInput.value = (cost / vol).toFixed(2);
-                }
-            }
+            const volInput = document.getElementsByName('liters')[0], costInput = document.getElementsByName('cost')[0], priceInput = document.getElementsByName('unitPrice')[0];
+            const vol = parseFloat(volInput.value) || 0, cost = parseFloat(costInput.value) || 0, price = parseFloat(priceInput.value) || 0;
+            if (field === 'vol') { if (price > 0) costInput.value = (vol * price).toFixed(2); else if (cost > 0) priceInput.value = (cost / vol).toFixed(2); }
+            else if (field === 'price') { if (vol > 0) costInput.value = (vol * price).toFixed(2); }
+            else if (field === 'cost') { if (vol > 0) priceInput.value = (cost / vol).toFixed(2); }
         },
 
         openAddService(id = null) {
             const activeCar = store.getActiveVehicle();
             if (!activeCar) return this.openAddVehicle();
-
             let log = { type: 'service', date: new Date().toISOString().split('T')[0], cost: '', note: '' };
-            let title = t('log_service');
-            let btnText = t('save_entry');
-            let hiddenId = '';
-            let deleteBtn = '';
+            let title = t('log_service'), btnText = t('save_entry'), hiddenId = '', deleteBtn = '';
 
             if (id) {
                 log = store.getLog(id);
                 log.date = new Date(log.date).toISOString().split('T')[0];
-                title = t('edit_record');
-                btnText = t('save_changes');
-                hiddenId = `<input type="hidden" name="id" value="${id}">`;
+                title = t('edit_record'); btnText = t('save_changes'); hiddenId = `<input type="hidden" name="id" value="${id}">`;
                 deleteBtn = `<button type="button" onclick="ui.deleteLogAndClose('${id}')" class="flex-1 bg-red-50 text-red-500 font-bold py-4 rounded-xl">${t('delete')}</button>`;
             }
 
-            const el = document.getElementById('modal-container');
-            const content = document.getElementById('modal-content');
-            content.innerHTML = `
-                <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-                    <span class="bg-orange-100 text-orange-600 p-2 rounded-lg">🔧</span> ${title}
-                </h2>
+            document.getElementById('modal-content').innerHTML = `
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><span class="bg-orange-100 text-orange-600 p-2 rounded-lg">🔧</span> ${title}</h2>
                 <form onsubmit="ui.submitLog(event, 'service')" class="space-y-4">
                     ${hiddenId}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('service_type')}</label>
-                        <select name="subType" class="w-full bg-slate-100 p-3 rounded-xl outline-none">
-                            <option value="Maintenance" ${log.type === 'service' ? 'selected' : ''}>${t('type_maint')}</option>
-                            <option value="Parking" ${log.type === 'parking' ? 'selected' : ''}>${t('type_parking')}</option>
-                        </select>
-                    </div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('service_type')}</label><select name="subType" class="w-full bg-slate-100 p-3 rounded-xl outline-none"><option value="Maintenance" ${log.type === 'service' ? 'selected' : ''}>${t('type_maint')}</option><option value="Parking" ${log.type === 'parking' ? 'selected' : ''}>${t('type_parking')}</option></select></div>
                     <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('date')}</label>
-                            <input type="date" name="date" required value="${log.date}" class="w-full bg-slate-100 p-3 rounded-xl outline-none">
-                        </div>
-                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('cost')}</label>
-                            <input type="number" step="0.01" name="cost" required value="${log.cost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00">
-                        </div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('date')}</label><input type="date" name="date" required value="${log.date}" class="w-full bg-slate-100 p-3 rounded-xl outline-none"></div>
+                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('cost')}</label><input type="number" step="0.01" name="cost" required value="${log.cost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('note')}</label>
-                        <input type="text" name="note" required value="${log.note}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('log_placeholder_note')}">
-                    </div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('note')}</label><input type="text" name="note" required value="${log.note}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('log_placeholder_note')}"></div>
                     <div class="flex gap-3 mt-4">
                         ${deleteBtn}
                         <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
@@ -1295,37 +986,20 @@
                     </div>
                 </form>
             `;
-            el.classList.remove('hidden');
+            document.getElementById('modal-container').classList.remove('hidden');
         },
 
         submitVehicle(e) {
             e.preventDefault();
             const fd = new FormData(e.target);
             const id = fd.get('id');
-            
             const vehicleData = {
-                make: fd.get('make'),
-                model: fd.get('model'),
-                year: fd.get('year'),
-                currentOdometer: parseInt(fd.get('odometer')),
-                // Capture new fields
-                licenseDate: fd.get('licenseDate') || '',
-                licenseCost: parseFloat(fd.get('licenseCost')) || 0,
-                insuranceDate: fd.get('insuranceDate') || '',
-                insuranceCost: parseFloat(fd.get('insuranceCost')) || 0
+                make: fd.get('make'), model: fd.get('model'), year: fd.get('year'), currentOdometer: parseInt(fd.get('odometer')),
+                licenseDate: fd.get('licenseDate') || '', licenseCost: parseFloat(fd.get('licenseCost')) || 0,
+                insuranceDate: fd.get('insuranceDate') || '', insuranceCost: parseFloat(fd.get('insuranceCost')) || 0
             };
-
-            if (id) {
-                // Update
-                vehicleData.id = id;
-                store.updateVehicle(vehicleData);
-            } else {
-                // Create
-                store.addVehicle(vehicleData);
-            }
-            
-            this.closeModal();
-            router.navigate('dashboard');
+            if (id) { vehicleData.id = id; store.updateVehicle(vehicleData); } else { store.addVehicle(vehicleData); }
+            this.closeModal(); router.navigate('dashboard');
         },
 
         submitLog(e, routeType) {
@@ -1333,90 +1007,38 @@
             const fd = new FormData(e.target);
             const activeCar = store.getActiveVehicle();
             const id = fd.get('id');
-            
-            // Handle subtype override
             let finalType = routeType;
             if (fd.get('subType') === 'Parking') finalType = 'parking';
             if (fd.get('subType') === 'Maintenance') finalType = 'service';
-            // Keep fuel as fuel
             if (routeType === 'fuel') finalType = 'fuel';
 
             const logData = {
-                vehicleId: activeCar.id,
-                type: finalType,
-                date: fd.get('date'),
-                cost: fd.get('cost'),
+                vehicleId: activeCar.id, type: finalType, date: fd.get('date'), cost: fd.get('cost'),
                 odometer: fd.get('odometer') ? parseInt(fd.get('odometer')) : (activeCar.currentOdometer),
-                liters: fd.get('liters') || 0,
-                location: fd.get('location') || '',
-                note: fd.get('note') || ''
+                liters: fd.get('liters') || 0, location: fd.get('location') || '', note: fd.get('note') || ''
             };
             
-            if (id) {
-                logData.id = id;
-                store.updateLog(logData);
-            } else {
-                store.addLog(logData);
-            }
-
-            this.closeModal();
-            router.navigate(routeType === 'fuel' ? 'fuel' : 'maintenance');
+            if (id) { logData.id = id; store.updateLog(logData); } else { store.addLog(logData); }
+            this.closeModal(); router.navigate(routeType === 'fuel' ? 'fuel' : 'maintenance');
         },
 
         deleteLogAndClose(id) {
-            if(confirm(t('confirm_delete'))) {
-                store.deleteLog(id);
-                this.closeModal();
-                router.navigate(router.current); 
-            }
+            if(confirm(t('confirm_delete'))) { store.deleteLog(id); this.closeModal(); router.navigate(router.current); }
         },
 
-        switchVehicle(id) {
-            store.data.settings.activeVehicleId = id;
-            store.save();
-            router.navigate('dashboard');
-        },
-
-        updateSetting(key, val) {
-            store.data.settings[key] = val;
-            store.save();
-            router.navigate(router.current); 
-        }
+        switchVehicle(id) { store.data.settings.activeVehicleId = id; store.save(); router.navigate('dashboard'); },
+        updateSetting(key, val) { store.data.settings[key] = val; store.save(); router.navigate(router.current); }
     };
 
-    // --- INIT ---
     window.addEventListener('DOMContentLoaded', () => {
-        store.init();
-        router.navigate('dashboard');
-        
+        store.init(); router.navigate('dashboard');
         if ('serviceWorker' in navigator) {
-            const swCode = `
+            navigator.serviceWorker.register(URL.createObjectURL(new Blob([`
                 const CACHE_NAME = 'fuelmate-v1';
-                const urlsToCache = [
-                    './',
-                    './index.html',
-                    'https://cdn.tailwindcss.com',
-                    'https://cdn.jsdelivr.net/npm/chart.js'
-                ];
-
-                self.addEventListener('install', event => {
-                    event.waitUntil(
-                        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-                    );
-                });
-
-                self.addEventListener('fetch', event => {
-                    event.respondWith(
-                        caches.match(event.request).then(response => {
-                            return response || fetch(event.request);
-                        })
-                    );
-                });
-            `;
-            const blob = new Blob([swCode], {type: 'text/javascript'});
-            navigator.serviceWorker.register(URL.createObjectURL(blob))
-                .then(() => console.log('SW registered'))
-                .catch(err => console.log('SW failed', err));
+                const urlsToCache = ['./','./index.html','https://cdn.tailwindcss.com','https://cdn.jsdelivr.net/npm/chart.js'];
+                self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))); });
+                self.addEventListener('fetch', event => { event.respondWith(caches.match(event.request).then(response => response || fetch(event.request))); });
+            `], {type: 'text/javascript'}))).catch(err => console.log('SW failed', err));
         }
     });
     </script>
