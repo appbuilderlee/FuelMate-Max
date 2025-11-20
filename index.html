@@ -10,11 +10,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="FuelMate">
-    <!-- PWA Icons -->
-    <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22FuelMate%22%2C%22short_name%22%3A%22FuelMate%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230d9488%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fapi.iconify.design%2Fmdi%2Fgas-station.svg%3Fcolor%3D%25230d9488%26width%3D192%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
-    <link rel="apple-touch-icon" href="https://api.iconify.design/mdi/gas-station.svg?color=%230d9488&width=180&height=180">
-    <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/mdi/gas-station.svg?color=%230d9488&width=32">
-    <meta name="theme-color" content="#0d9488">
+    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAYAAADnRuK4AAAACXBIWXMAAA7DAAAOwwHHb6hkAAADbklEQVR4nO3dy29SURwH8O9XoaVIIbUVSCkEItTExRCNG2NijC504864cWfc+B9044640Y0xJsTEGF8RU6KBCAoSX1B5FBCQ8izl0dM40Qq9fWc6v9/kk5zcu8/53jMz53zPPRQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIB/S6vV2jGZTL4YGxt7bLVaBwF/k81m60qlUj+VSr0cHR29nE6nXwH+JCMiV1dXd9lsNqfT6RwD/E2xWOxLJBJ3c7ncQ6vV+gbwB83n82eWl5cf+f3+0wB/k8lkHszMzFxsd/QJ6C86nc4zbrf7IsDftFqtXzY3N/flcrkXAP9D2+32zvn5+fNcLncJ4G8qlUrPi8XiXbPZ/ALwB01E5Orq6i6HwzEO8DflcvlOMpm8n0gkfH19fX91Ot2f+Xz+g4iI1Wp1i4h4vV7H6OjoWZvN5gT4i4rF4l0R+bKwsHAvGo0+FhHxeDynbDbbhM1mcwL8Rblc7qGIPFpaWrqztLT0SESEx+Nx2O12J8Bf1Gq1vopIJBKJ3AuHww9ERDwej91ut48C/EUi8kFE5O7dO7ciocjD8Ph4wOVynQD4k0ql0nMRkUQicW9tbe2RiAiv1/t/g/wBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwH9hZGQk6HA4xgD+plQq9TwWiz1oNptfAP6g9XTaLpfrIsDflEqlXzY3N/flcrlXAH/QvF7vGbfbfRHgbyqVys/Nzc1fAJ9gMpm8s7y8/Mjv958G+JtMJvNgZmYmBvAJbrf7jM1mcwL8TbFY7EskEndzudxDq9X6BvAHzefzZ05OTp7lcrkLAH+TyWQezMzMXGw39AroLzqdztNut/sCwN+0Wq1fNjc39+VyuRcA/0P7/f7ZxcXF81wudwngbyqVSs/j8fids7OzLwB/0ERErq6u7nI6nWMHBwd9fX1/dTrdn/l8/oOIiNVqdYuIeL1ex+jo6FmbzeYE+IuKxeJdEfmysLBwLxqNPhYR8Xg8pmw224TNZnMC/EW5XO6hiDxaWlq6s7S09EhEhMfjMdrtdifAX9Rqtb6KSCQSidwLh8MPREQ8Ho/dbrefAvgLEfmQz+c/iIjcu3fvvwdI5GF4fDzgcrkAf5J/A/W/f/0yXw2nAAAAAElFTkSuQmCC">
+
     <!-- Libraries (Tailwind + Chart.js) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -40,16 +37,19 @@
     <style>
         body {
             -webkit-tap-highlight-color: transparent;
-            padding-bottom: env(safe-area-inset-bottom);
+            /* Prevent bounce effect on body */
+            overscroll-behavior-y: none;
         }
         .ios-scroll {
             -webkit-overflow-scrolling: touch;
         }
+        /* Safe area padding bottom for the main scroll container to clear the nav */
         .pb-safe {
-            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            padding-bottom: calc(100px + env(safe-area-inset-bottom));
         }
+        /* Safe area padding top for headers to clear the notch */
         .pt-safe {
-            padding-top: max(1rem, env(safe-area-inset-top));
+            padding-top: calc(env(safe-area-inset-top) + 24px);
         }
         /* Hide scrollbar for clean UI */
         .no-scrollbar::-webkit-scrollbar {
@@ -74,7 +74,7 @@
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
 
     <!-- MAIN CONTENT AREA -->
-    <main id="main-content" class="flex-1 overflow-y-auto ios-scroll pb-safe relative">
+    <main id="main-content" class="flex-1 overflow-y-auto ios-scroll relative">
         <!-- Dynamic Content Loaded Here -->
     </main>
 
@@ -708,7 +708,7 @@
                     <h1 class="text-3xl font-bold text-slate-800">${t('title_fuel')}</h1>
                     <button onclick="ui.openAddFuel()" class="bg-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md">+</button>
                 </div>
-                <div class="p-4 space-y-3 pb-24">
+                <div class="p-4 space-y-3 pb-safe">
                     ${logs.length ? logs.map((log, index) => {
                         const unitPrice = log.liters > 0 ? (log.cost / log.liters).toFixed(2) : '0.00';
                         let statsHtml = `<div class="text-xs text-slate-400 italic text-center py-2">${t('waiting_data')}</div>`;
@@ -788,7 +788,7 @@
                     <h1 class="text-3xl font-bold text-slate-800">${t('title_service')}</h1>
                     <button onclick="ui.openAddService()" class="bg-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md">+</button>
                 </div>
-                <div class="p-4 space-y-3 pb-24">
+                <div class="p-4 space-y-3 pb-safe">
                     ${logs.length ? logs.map(log => `
                         <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative">
                             <div class="flex gap-3">
@@ -824,7 +824,7 @@
                  <div class="pt-safe px-6 pb-4 bg-white sticky top-0 z-10">
                      <h1 class="text-3xl font-bold text-slate-800">${t('title_analytics')}</h1>
                  </div>
-                 <div class="p-4 pb-24 space-y-6">
+                 <div class="p-4 pb-safe space-y-6">
                      <!-- Fixed Costs Card -->
                      <div class="bg-white p-4 rounded-2xl card-shadow flex justify-between items-center">
                          <div>
@@ -928,7 +928,7 @@
                 <div class="pt-safe px-6 pb-6 bg-gradient-to-br from-slate-800 to-slate-900 text-white sticky top-0 z-10">
                     <h1 class="text-3xl font-bold">${t('title_settings')}</h1>
                 </div>
-                <div class="p-4 space-y-6 pb-24">
+                <div class="p-4 space-y-6 pb-safe">
                     <!-- Vehicles Section -->
                     <section>
                         <div class="flex justify-between items-center mb-2 px-2">
@@ -1153,42 +1153,9 @@
                 deleteBtn = `<button type="button" onclick="ui.deleteLogAndClose('${id}')" class="flex-1 bg-red-50 text-red-500 font-bold py-4 rounded-xl">${t('delete')}</button>`;
             } else {
                 // Get location for new log only
-                                // Auto-fetch GPS location for new logs
-                if (navigator.geolocation && !id) {
-                    navigator.geolocation.getCurrentPosition(async (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        
-                        // Use Nominatim reverse geocoding to get place name
-                        try {
-                            const response = await fetch(
-                                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
-                                { headers: { 'User-Agent': 'FuelMate-Max' } }
-                            );
-                            const data = await response.json();
-                            
-                            // Try to get petrol station name or use address
-                            let locationName = data.display_name;
-                            if (data.address && (data.address.amenity || data.address.shop)) {
-                                locationName = data.address.amenity || data.address.shop;
-                                if (data.address.brand) locationName = data.address.brand + ' ' + locationName;
-                            }
-                            
-                            log.location = locationName;
-                            log.latitude = lat;
-                            log.longitude = lon;
-                            
-                            // Refresh modal with location
-                            content.querySelector('[name="location"]').value = locationName;
-                        } catch (error) {
-                            console.error('Failed to get location name:', error);
-                            log.location = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-                            content.querySelector('[name="location"]').value = log.location;
-                        }
-                    }, (error) => {
-                        console.error('GPS error:', error);
-                    });
-                }
+                let loc = await utils.getCurrentLocation();
+                if(loc) log.location = `${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
+            }
 
             const isMetric = store.data.settings.unitSystem === 'metric';
             const unitLabel = isMetric ? t('price_per_unit_l') : t('price_per_unit_g');
@@ -1231,7 +1198,6 @@
                     <div>
                          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label>
                          <input type="text" name="location" value="${log.location}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('location_placeholder')}">
-                                                         <button type="button" onclick="if(this.form.elements.location.value){const coords=this.form.elements.location.value.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);if(coords){window.open(`https://www.google.com/maps?q=${coords[1]},${coords[2]}`,'_blank')}else{alert(t('no_location_coordinates'))}}" class="mt-2 bg-teal-50 text-teal-600 px-4 py-2 rounded-lg text-sm font-bold">📍 ${t('view_on_map')}</button>
                     </div>
                     <div class="flex gap-3 mt-4">
                         ${deleteBtn}
