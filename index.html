@@ -315,6 +315,7 @@
 
         getLatestLog(vehicleId, type) {
             const logs = this.getLogs(vehicleId, type);
+            // getLogs already sorts by date DESC, so logs[0] is the latest
             return logs.length > 0 ? logs[0] : null;
         },
 
@@ -564,6 +565,9 @@
         },
 
         renderReminders(car) {
+            // The Logic: getLatestLog already sorts by Date DESC.
+            // So if user adds a new renewal for 2026, it will be index 0, and the 2025 one will be index 1.
+            // Thus the reminder will automatically update to the new date.
             const licLog = store.getLatestLog(car.id, 'license');
             const insLog = store.getLatestLog(car.id, 'insurance');
             const regLog = store.getLatestLog(car.id, 'registration');
@@ -902,7 +906,7 @@
                             </div>
                         </div>
                     </section>
-                    <div class="text-center text-xs text-slate-300 mt-8">FuelMate v1.3.3<br>Offline PWA</div>
+                    <div class="text-center text-xs text-slate-300 mt-8">FuelMate v1.3.4<br>Offline PWA</div>
                 </div>
             `;
         },
@@ -1076,8 +1080,11 @@
                         <input type="date" name="expiryDate" value="${log.expiryDate || ''}" class="w-full bg-slate-100 p-3 rounded-xl outline-none border-2 border-teal-100 focus:border-teal-500">
                     </div>
 
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('note')}</label><input type="text" name="note" required value="${log.note}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('log_placeholder_note')}"></div>
-                    <div>
+                    <div id="note-field">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('note')}</label>
+                        <input type="text" name="note" value="${log.note}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('log_placeholder_note')}">
+                    </div>
+                    <div id="location-field">
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label>
                         <div class="flex gap-2">
                             <input type="text" name="location" value="${log.location || ''}" class="flex-1 bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('location_placeholder')}">
@@ -1094,15 +1101,27 @@
                 </form>
             `;
             document.getElementById('modal-container').classList.remove('hidden');
+            
+            // Trigger initial state to hide/show fields correctly based on loaded type
+            this.toggleExpiryField();
         },
 
         toggleExpiryField() {
             const type = document.getElementById('service-type-select').value;
-            const field = document.getElementById('expiry-field');
-            if (['License', 'Insurance', 'Registration'].includes(type)) {
-                field.classList.remove('hidden');
+            const expiryEl = document.getElementById('expiry-field');
+            const noteEl = document.getElementById('note-field');
+            const locEl = document.getElementById('location-field');
+            
+            const isDoc = ['License', 'Insurance', 'Registration'].includes(type);
+
+            if (isDoc) {
+                expiryEl.classList.remove('hidden');
+                noteEl.classList.add('hidden');
+                locEl.classList.add('hidden');
             } else {
-                field.classList.add('hidden');
+                expiryEl.classList.add('hidden');
+                noteEl.classList.remove('hidden');
+                locEl.classList.remove('hidden');
             }
         },
 
@@ -1132,10 +1151,15 @@
             if (subType === 'Registration') finalType = 'registration';
             if (routeType === 'fuel') finalType = 'fuel';
 
+            // For document types, we don't need Note and Location
+            const isDoc = ['license', 'insurance', 'registration'].includes(finalType);
+            
             const logData = {
                 vehicleId: activeCar.id, type: finalType, date: fd.get('date'), cost: fd.get('cost'),
                 odometer: fd.get('odometer') ? parseInt(fd.get('odometer')) : (activeCar.currentOdometer),
-                liters: fd.get('liters') || 0, location: fd.get('location') || '', note: fd.get('note') || '',
+                liters: fd.get('liters') || 0, 
+                location: isDoc ? '' : (fd.get('location') || ''), 
+                note: isDoc ? '' : (fd.get('note') || ''),
                 expiryDate: fd.get('expiryDate') || ''
             };
             
