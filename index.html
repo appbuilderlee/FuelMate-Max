@@ -154,7 +154,7 @@
             fuel: 'Fuel', service: 'Service', parking: 'Parking',
             expense_breakdown: 'Expense Breakdown', fuel_eff_trend: 'Fuel Efficiency Trend',
             vehicle_placeholder_make: 'Toyota', vehicle_placeholder_model: 'Camry',
-            log_placeholder_note: 'Oil Change, Tire Rotation...', location_placeholder: 'Station Name',
+            log_placeholder_note: 'Oil Change, Tire Rotation...', location_placeholder: 'Station Name (e.g. Shell)',
             no_vehicle_desc: 'Add a vehicle to start tracking fuel and maintenance.',
             price_per_unit_l: 'Price per Liter', price_per_unit_g: 'Price per Gallon',
             prev_dist: 'Distance', waiting_data: 'More data needed',
@@ -165,7 +165,8 @@
             license_exp: 'License Expiry', license_cost: 'Renewal Cost',
             insurance_exp: 'Insurance Expiry', insurance_cost: 'Renewal Cost',
             reminders: 'Reminders', expired: 'Expired', days_left: 'days left',
-            fixed_costs: 'Annual Fixed Costs', section_fixed: 'Fixed Costs & Expiry'
+            fixed_costs: 'Annual Fixed Costs', section_fixed: 'Fixed Costs & Expiry',
+            detecting: 'Locating...', geo_error: 'Location not found'
         },
         zh: {
             nav_dash: '首頁', nav_fuel: '加油', nav_service: '維修', nav_stats: '統計', nav_settings: '設定',
@@ -188,7 +189,7 @@
             fuel: '加油', service: '維修', parking: '停車',
             expense_breakdown: '花費分佈', fuel_eff_trend: '油耗趨勢',
             vehicle_placeholder_make: 'Toyota', vehicle_placeholder_model: 'Corolla',
-            log_placeholder_note: '換機油、輪胎對調...', location_placeholder: '加油站名稱',
+            log_placeholder_note: '換機油、輪胎對調...', location_placeholder: '地點名稱 (例如：Shell 加油站)',
             no_vehicle_desc: '請新增車輛以開始追蹤油耗與保養紀錄。',
             price_per_unit_l: '單價（每公升）', price_per_unit_g: '單價（每加侖）',
             prev_dist: '行駛距離', waiting_data: '等待更多記錄',
@@ -199,7 +200,8 @@
             license_exp: '車牌到期日期', license_cost: '車牌續期費用',
             insurance_exp: '保險到期日期', insurance_cost: '保險續期費用',
             reminders: '提醒通知', expired: '已過期', days_left: '天後到期',
-            fixed_costs: '年度固定支出', section_fixed: '車牌與保險'
+            fixed_costs: '年度固定支出', section_fixed: '車牌與保險',
+            detecting: '定位中...', geo_error: '無法獲取位置'
         }
     };
 
@@ -390,6 +392,27 @@
                     (err) => resolve(null)
                 );
             });
+        },
+        async reverseGeocode(lat, lng) {
+            try {
+                // Using Nominatim OpenStreetMap (Free, no API key needed)
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+                if (!res.ok) return null;
+                const data = await res.json();
+                
+                // Prioritize extracting a relevant name
+                const name = data.name;
+                const addr = data.address || {};
+                const road = addr.road || addr.pedestrian || addr.highway;
+                const suburb = addr.suburb || addr.city_district || addr.town || addr.city;
+                
+                if (name) return name;
+                if (road) return `${road}, ${suburb || ''}`;
+                return suburb || data.display_name.split(',')[0];
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
         },
         getDaysLeft(dateStr) {
             if (!dateStr) return null;
@@ -667,6 +690,7 @@
                                 </div>
                                 <div class="text-xs font-bold text-slate-500">${utils.formatDist(log.odometer)}</div>
                             </div>
+                            ${log.location ? `<div class="text-[10px] text-slate-400 mt-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> ${log.location}</div>` : ''}
                             ${statsHtml}
                         </div>
                     `}).join('') : `<div class="text-center py-10 text-slate-400">${t('no_logs')}</div>`}
@@ -835,7 +859,7 @@
                             </div>
                         </div>
                     </section>
-                    <div class="text-center text-xs text-slate-300 mt-8">FuelMate v1.3.1<br>Offline PWA</div>
+                    <div class="text-center text-xs text-slate-300 mt-8">FuelMate v1.3.2<br>Offline PWA</div>
                 </div>
             `;
         },
@@ -905,6 +929,28 @@
             document.getElementById('modal-container').classList.remove('hidden');
         },
 
+        async fetchLocationName(fieldName) {
+            const input = document.getElementsByName(fieldName)[0];
+            const originalPlaceholder = input.placeholder;
+            input.value = '';
+            input.placeholder = t('detecting');
+            
+            const loc = await utils.getCurrentLocation();
+            if (!loc) {
+                input.placeholder = t('geo_error');
+                setTimeout(() => input.placeholder = originalPlaceholder, 3000);
+                return;
+            }
+            
+            const name = await utils.reverseGeocode(loc.lat, loc.lng);
+            if (name) {
+                input.value = name;
+            } else {
+                input.placeholder = t('geo_error');
+            }
+            if(!input.value) setTimeout(() => input.placeholder = originalPlaceholder, 3000);
+        },
+
         async openAddFuel(id = null) {
             const activeCar = store.getActiveVehicle();
             if (!activeCar) return this.openAddVehicle();
@@ -917,9 +963,6 @@
                 title = t('edit_record'); btnText = t('save_changes'); hiddenId = `<input type="hidden" name="id" value="${id}">`;
                 if (log.liters > 0) log.unitPrice = (log.cost / log.liters).toFixed(2);
                 deleteBtn = `<button type="button" onclick="ui.deleteLogAndClose('${id}')" class="flex-1 bg-red-50 text-red-500 font-bold py-4 rounded-xl">${t('delete')}</button>`;
-            } else {
-                let loc = await utils.getCurrentLocation();
-                if(loc) log.location = `${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
             }
             const isMetric = store.data.settings.unitSystem === 'metric';
             const unitLabel = isMetric ? t('price_per_unit_l') : t('price_per_unit_g');
@@ -937,7 +980,15 @@
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${unitLabel}</label><input type="number" step="0.01" name="unitPrice" value="${log.unitPrice}" oninput="ui.calcFuel('price')" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
                     </div>
                     <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('cost')}</label><input type="number" step="0.01" name="cost" value="${log.cost}" oninput="ui.calcFuel('cost')" required class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label><input type="text" name="location" value="${log.location}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('location_placeholder')}"></div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label>
+                        <div class="flex gap-2">
+                            <input type="text" name="location" value="${log.location}" class="flex-1 bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('location_placeholder')}">
+                            <button type="button" onclick="ui.fetchLocationName('location')" class="bg-teal-100 text-teal-600 p-3 rounded-xl hover:bg-teal-200 transition">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
                     <div class="flex gap-3 mt-4">
                         ${deleteBtn}
                         <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
@@ -959,7 +1010,7 @@
         openAddService(id = null) {
             const activeCar = store.getActiveVehicle();
             if (!activeCar) return this.openAddVehicle();
-            let log = { type: 'service', date: new Date().toISOString().split('T')[0], cost: '', note: '' };
+            let log = { type: 'service', date: new Date().toISOString().split('T')[0], cost: '', note: '', location: '' };
             let title = t('log_service'), btnText = t('save_entry'), hiddenId = '', deleteBtn = '';
 
             if (id) {
@@ -979,6 +1030,15 @@
                          <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('cost')}</label><input type="number" step="0.01" name="cost" required value="${log.cost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
                     </div>
                     <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('note')}</label><input type="text" name="note" required value="${log.note}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('log_placeholder_note')}"></div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label>
+                        <div class="flex gap-2">
+                            <input type="text" name="location" value="${log.location || ''}" class="flex-1 bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('location_placeholder')}">
+                            <button type="button" onclick="ui.fetchLocationName('location')" class="bg-teal-100 text-teal-600 p-3 rounded-xl hover:bg-teal-200 transition">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
                     <div class="flex gap-3 mt-4">
                         ${deleteBtn}
                         <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
