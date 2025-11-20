@@ -145,7 +145,7 @@
             efficiency: 'Efficiency', total_spent: 'Total Spent', last_30: 'Last 30 days', lifetime: 'Lifetime',
             quick_actions: 'Quick Actions', log_fuel: 'Add Fuel', log_service: 'Log Service',
             recent_activity: 'Recent Activity', no_logs: 'No logs in this period.',
-            title_fuel: 'Fuel Log', title_service: 'Service & Other', title_parking: 'Parking', title_analytics: 'Analytics', title_settings: 'Settings',
+            title_fuel: 'Fuel Log', title_service: 'Service / License', title_parking: 'Parking', title_analytics: 'Analytics', title_settings: 'Settings',
             vehicle_details: 'My Vehicles', preferences: 'Preferences', data: 'Data',
             currency: 'Currency', units: 'Units', language: 'Language',
             export_json: 'Export Data (JSON)', import_json: 'Import Data (JSON)',
@@ -183,7 +183,7 @@
             efficiency: '油耗表現', total_spent: '總花費', last_30: '過去 30 天', lifetime: '生涯累計',
             quick_actions: '快速功能', log_fuel: '新增加油', log_service: '新增紀錄',
             recent_activity: '近期動態', no_logs: '此期間尚無紀錄',
-            title_fuel: '加油紀錄', title_service: '維修保養', title_parking: '停車紀錄', title_analytics: '統計圖表', title_settings: '設定選項',
+            title_fuel: '加油紀錄', title_service: '維修保養/牌照', title_parking: '停車紀錄', title_analytics: '統計圖表', title_settings: '設定選項',
             vehicle_details: '我的車輛', preferences: '偏好設定', data: '資料管理',
             currency: '貨幣單位', units: '度量單位', language: '語言 (Language)',
             export_json: '匯出資料 (JSON)', import_json: '匯入資料 (JSON)',
@@ -1339,30 +1339,4 @@
             this.closeModal(); 
             
             // Redirect back to appropriate page
-            if (finalType === 'fuel') router.navigate('fuel');
-            else if (finalType === 'parking') router.navigate('parking');
-            else router.navigate('maintenance');
-        },
-
-        deleteLogAndClose(id) {
-            if(confirm(t('confirm_delete'))) { store.deleteLog(id); this.closeModal(); router.navigate(router.current); }
-        },
-
-        switchVehicle(id) { store.data.settings.activeVehicleId = id; store.save(); router.navigate('dashboard'); },
-        updateSetting(key, val) { store.data.settings[key] = val; store.save(); router.navigate(router.current); }
-    };
-
-    window.addEventListener('DOMContentLoaded', () => {
-        store.init(); router.navigate('dashboard');
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register(URL.createObjectURL(new Blob([`
-                const CACHE_NAME = 'fuelmate-v1';
-                const urlsToCache = ['./','./index.html','https://cdn.tailwindcss.com','https://cdn.jsdelivr.net/npm/chart.js'];
-                self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))); });
-                self.addEventListener('fetch', event => { event.respondWith(caches.match(event.request).then(response => response || fetch(event.request))); });
-            `], {type: 'text/javascript'}))).catch(err => console.log('SW failed', err));
-        }
-    });
-    </script>
-</body>
-</html>
+            if (finalType
