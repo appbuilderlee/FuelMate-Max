@@ -1153,9 +1153,42 @@
                 deleteBtn = `<button type="button" onclick="ui.deleteLogAndClose('${id}')" class="flex-1 bg-red-50 text-red-500 font-bold py-4 rounded-xl">${t('delete')}</button>`;
             } else {
                 // Get location for new log only
-                let loc = await utils.getCurrentLocation();
-                if(loc) log.location = `${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
-            }
+                                // Auto-fetch GPS location for new logs
+                if (navigator.geolocation && !id) {
+                    navigator.geolocation.getCurrentPosition(async (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        // Use Nominatim reverse geocoding to get place name
+                        try {
+                            const response = await fetch(
+                                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
+                                { headers: { 'User-Agent': 'FuelMate-Max' } }
+                            );
+                            const data = await response.json();
+                            
+                            // Try to get petrol station name or use address
+                            let locationName = data.display_name;
+                            if (data.address && (data.address.amenity || data.address.shop)) {
+                                locationName = data.address.amenity || data.address.shop;
+                                if (data.address.brand) locationName = data.address.brand + ' ' + locationName;
+                            }
+                            
+                            log.location = locationName;
+                            log.latitude = lat;
+                            log.longitude = lon;
+                            
+                            // Refresh modal with location
+                            content.querySelector('[name="location"]').value = locationName;
+                        } catch (error) {
+                            console.error('Failed to get location name:', error);
+                            log.location = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+                            content.querySelector('[name="location"]').value = log.location;
+                        }
+                    }, (error) => {
+                        console.error('GPS error:', error);
+                    });
+                }
 
             const isMetric = store.data.settings.unitSystem === 'metric';
             const unitLabel = isMetric ? t('price_per_unit_l') : t('price_per_unit_g');
@@ -1198,6 +1231,7 @@
                     <div>
                          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label>
                          <input type="text" name="location" value="${log.location}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('location_placeholder')}">
+                                                         <button type="button" onclick="if(this.form.elements.location.value){const coords=this.form.elements.location.value.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);if(coords){window.open(`https://www.google.com/maps?q=${coords[1]},${coords[2]}`,'_blank')}else{alert(t('no_location_coordinates'))}}" class="mt-2 bg-teal-50 text-teal-600 px-4 py-2 rounded-lg text-sm font-bold">📍 ${t('view_on_map')}</button>
                     </div>
                     <div class="flex gap-3 mt-4">
                         ${deleteBtn}
