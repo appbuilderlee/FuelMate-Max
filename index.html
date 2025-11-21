@@ -1,1464 +1,1392 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>FuelMate</title>
-    
-    <!-- iOS PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FuelMate">
-    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAYAAADnRuK4AAAACXBIWXMAAA7DAAAOwwHHb6hkAAADbklEQVR4nO3dy29SURwH8O9XoaVIIbUVSCkEItTExRCNG2NijC504864cWfc+B9044640Y0xJsTEGF8RU6KBCAoSX1B5FBCQ8izl0dM40Qq9fWc6v9/kk5zcu8/53jMz53zPPRQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIB/S6vV2jGZTL4YGxt7bLVaBwF/k81m60qlUj+VSr0cHR29nE6nXwH+JCMiV1dXd9lsNqfT6RwD/E2xWOxLJBJ3c7ncQ6vV+gbwB83n82eWl5cf+f3+0wB/k8lkHszMzFxsd/QJ6C86nc4zbrf7IsDftFqtXzY3N/flcrkXAP9D2+32zvn5+fNcLncJ4G8qlUrPi8XiXbPZ/ALwB01E5Orq6i6HwzEO8DflcvlOMpm8n0gkfH19fX91Ot2f+Xz+g4iI1Wp1i4h4vV7H6OjoWZvN5gT4i4rF4l0R+bKwsHAvGo0+FhHxeDynbDbbhM1mcwL8Rblc7qGIPFpaWrqztLT0SESEx+Nx2O12J8Bf1Gq1vopIJBKJ3AuHww9ERDwej91ut48C/EUi8kFE5O7dO7ciocjD8Ph4wOVynQD4k0ql0nMRkUQicW9tbe2RiAiv1/t/g/wBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwH9hZGQk6HA4xgD+plQq9TwWiz1oNptfAP6g9XTaLpfrIsDflEqlXzY3N/flcrlXAH/QvF7vGbfbfRHgbyqVys/Nzc1fAJ9gMpm8s7y8/Mjv958G+JtMJvNgZmYmBvAJbrf7jM1mcwL8TbFY7EskEndzudxDq9X6BvAHzefzZ05OTp7lcrkLAH+TyWQezMzMXGw39AroLzqdztNut/sCwN+0Wq1fNjc39+VyuRcA/0P7/f7ZxcXF81wudwngbyqVSs/j8fids7OzLwB/0ERErq6u7nI6nWMHBwd9fX1/dTrdn/l8/oOIiNVqdYuIeL1ex+jo6FmbzeYE+IuKxeJdEfmysLBwLxqNPhYR8Xg8pmw224TNZnMC/EW5XO6hiDxaWlq6s7S09EhEhMfjMdrtdifAX9Rqtb6KSCQSidwLh8MPREQ8Ho/dbrefAvgLEfmQz+c/iIjcu3fvvwdI5GF4fDzgcrkAf5J/A/W/f/0yXw2nAAAAAElFTkSuQmCC">
-
-    <!-- Libraries (Tailwind + Chart.js) -->
+    <title>FuelMate</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Config for Tailwind -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#0d9488', // teal-600
-                        secondary: '#0f172a', // slate-900
-                        accent: '#38bdf8', // sky-400
-                    },
-                    fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
-        body {
-            -webkit-tap-highlight-color: transparent;
-            /* Allow native scrolling */
-            overscroll-behavior-y: auto;
-        }
-        /* Variables for Safe Area */
         :root {
-            --safe-top: env(safe-area-inset-top);
-            --safe-bottom: env(safe-area-inset-bottom);
+            --safe-top: env(safe-area-inset-top, 20px);
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --app-blue: #00b4db;
+            --app-teal: #0083b0;
         }
         
-        /* Safe Top Padding for Fixed/Sticky Headers */
-        .pt-safe-header {
-            padding-top: max(20px, var(--safe-top));
-        }
-        
-        /* Content padding bottom to clear nav */
-        .pb-safe-nav {
-            padding-bottom: calc(80px + var(--safe-bottom));
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+            -webkit-tap-highlight-color: transparent;
+            /* Native scrolling */
+            overflow-y: auto; 
+            overflow-x: hidden;
         }
 
-        .card-shadow {
+        /* Safe Area Spacing */
+        .pt-safe { padding-top: calc(var(--safe-top) + 22px); }
+        .pb-safe { padding-bottom: calc(var(--safe-bottom) + 80px); }
+        
+        /* Sticky Headers */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            padding-top: var(--safe-top);
+            background: rgba(243, 244, 246, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(to right, var(--app-blue), var(--app-teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        
+        /* Animations */
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Card Styles */
+        .card-shadow { 
             box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255,255,255,0.5);
         }
-        .slide-up {
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-        
-        /* Hide scrollbar */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Floating Action Button */
+        .fab-shadow { box-shadow: 0 4px 15px rgba(0, 180, 219, 0.4); }
     </style>
+    <script>
+        // Dynamic Icon Generator
+        (function() {
+            const size = 512;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Background Gradient
+            const grd = ctx.createLinearGradient(0, 0, size, size);
+            grd.addColorStop(0, '#00b4db');
+            grd.addColorStop(1, '#0083b0');
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, size, size);
+
+            // Icon (Gas Pump)
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 300px Material Icons';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('local_gas_station', size/2, size/2);
+
+            const dataUrl = canvas.toDataURL('image/png');
+
+            // Inject Link
+            const link = document.createElement('link');
+            link.rel = 'apple-touch-icon';
+            link.href = dataUrl;
+            document.head.appendChild(link);
+
+            // Dynamic Manifest
+            const manifest = {
+                name: "FuelMate",
+                short_name: "FuelMate",
+                start_url: ".",
+                display: "standalone",
+                background_color: "#f3f4f6",
+                theme_color: "#0083b0",
+                icons: [{ src: dataUrl, sizes: "512x512", type: "image/png" }]
+            };
+            const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+            const manifestUrl = URL.createObjectURL(blob);
+            const manifestLink = document.createElement('link');
+            manifestLink.rel = 'manifest';
+            manifestLink.href = manifestUrl;
+            document.head.appendChild(manifestLink);
+        })();
+    </script>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen pb-safe-nav">
+<body class="text-slate-700">
 
-    <!-- MAIN CONTENT AREA -->
-    <main id="main-content" class="w-full">
-        <!-- Dynamic Content Loaded Here -->
-    </main>
+    <div id="app" class="min-h-screen pb-safe">
+        <!-- Dynamic Content -->
+    </div>
 
-    <!-- BOTTOM NAVIGATION -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] z-50 transition-transform duration-300">
-        <div class="flex justify-between items-center h-16 px-1">
-            <button onclick="router.navigate('dashboard')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-dashboard">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                    <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h2.25a3 3 0 013 3v2.25a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm9.75 0a3 3 0 013-3H18a3 3 0 013 3v2.25a3 3 0 01-3 3h-2.25a3 3 0 01-3-3V6zM3 15.75a3 3 0 013-3h2.25a3 3 0 013 3V18a3 3 0 01-3 3H6a3 3 0 01-3-3v-2.25zm9.75 0a3 3 0 013-3H18a3 3 0 013 3V18a3 3 0 01-3 3h-2.25a3 3 0 01-3-3v-2.25z" clip-rule="evenodd" />
-                </svg>
-                <span id="nav-txt-dashboard" class="text-[9px] font-medium truncate w-full text-center">Dash</span>
-            </button>
-            <button onclick="router.navigate('fuel')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-fuel">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                    <path fill-rule="evenodd" d="M12.97 3.97a.75.75 0 011.06 0l7.5 7.5a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 11-1.06-1.06l6.22-6.22H3a.75.75 0 010-1.5h16.19l-6.22-6.22a.75.75 0 010-1.06z" clip-rule="evenodd" />
-                    <path d="M9.75 9a.75.75 0 000 1.5h.75a.75.75 0 000-1.5H9.75zM6 13.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5H6z" />
-                    <path fill-rule="evenodd" d="M3.75 2.25a.75.75 0 00-.75.75v16.5c0 .414.336.75.75.75h16.5a.75.75 0 00.75-.75V3a.75.75 0 00-.75-.75H3.75zM4.5 3.75h15v15h-15v-15z" clip-rule="evenodd" />
-                    <path d="M12 2.25a.75.75 0 01.75.75v2.25H18a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0118 23.25H6A2.25 2.25 0 013.75 21V7.5A2.25 2.25 0 016 5.25h5.25V3a.75.75 0 01.75-.75zM6 6.75a.75.75 0 00-.75.75v8.25h6v-9H6zm7.5 0v9h6v-8.25a.75.75 0 00-.75-.75h-5.25zM6 17.25v3.75h12v-3.75H6z" />
-                </svg>
-                <span id="nav-txt-fuel" class="text-[9px] font-medium truncate w-full text-center">Fuel</span>
-            </button>
-            <button onclick="router.navigate('parking')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-parking">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                    <path fill-rule="evenodd" d="M3 2.25a.75.75 0 01.75.75v.54l1.838-.46a9.75 9.75 0 016.725.738l.108.054a8.25 8.25 0 005.58.652l3.109-.732a.75.75 0 01.917.81 47.784 47.784 0 00.005 10.337.75.75 0 01-.574.812l-3.114.733a9.75 9.75 0 01-6.594-.77l-.108-.054a8.25 8.25 0 00-5.69-.625l-2.202.55V21a.75.75 0 01-1.5 0V3A.75.75 0 013 2.25z" clip-rule="evenodd" />
-                </svg>
-                <span id="nav-txt-parking" class="text-[9px] font-medium truncate w-full text-center">Parking</span>
-            </button>
-            <button onclick="router.navigate('maintenance')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-maintenance">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                    <path d="M13.5 2a1.5 1.5 0 00-3 0v1.082a11.035 11.035 0 01-3.595 2.148l-3.22.92A2.25 2.25 0 002.25 8.25v1.5A2.25 2.25 0 004.5 12h1.734c.435 0 .838.225 1.083.587l2.308 3.461A2.25 2.25 0 0011.5 17.25h1A2.25 2.25 0 0014.373 16.048l2.308-3.461c.245-.362.648-.587 1.083-.587H19.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-1.435-2.102l-3.22-.92a11.035 11.035 0 01-3.595-2.148V2z" />
-                </svg>
-                <span id="nav-txt-service" class="text-[9px] font-medium truncate w-full text-center">Service+</span>
-            </button>
-            <button onclick="router.navigate('analytics')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-analytics">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                    <path fill-rule="evenodd" d="M2.25 13.5a8.25 8.25 0 018.25-8.25.75.75 0 01.75.75v6.75H18a.75.75 0 01.75.75 8.25 8.25 0 01-16.5 0z" clip-rule="evenodd" />
-                    <path fill-rule="evenodd" d="M12.75 3a.75.75 0 01.75-.75 8.25 8.25 0 018.25 8.25.75.75 0 01-.75.75h-7.5a.75.75 0 01-.75-.75V3a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
-                </svg>
-                <span id="nav-txt-stats" class="text-[9px] font-medium truncate w-full text-center">Stats</span>
-            </button>
-            <button onclick="router.navigate('settings')" class="nav-btn flex-1 h-full flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-colors" id="nav-settings">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                    <path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.843zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd" />
-                </svg>
-                <span id="nav-txt-settings" class="text-[9px] font-medium truncate w-full text-center">Settings</span>
-            </button>
-        </div>
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-lg border-t border-slate-100 flex justify-around items-center pb-[env(safe-area-inset-bottom)] pt-2 z-50" style="padding-bottom: max(10px, env(safe-area-inset-bottom));">
+        <button onclick="router.navigate('dashboard')" class="nav-btn p-2 flex flex-col items-center text-slate-400 transition duration-300" data-page="dashboard">
+            <span class="material-icons text-2xl mb-0.5">dashboard</span>
+            <span class="text-[10px] font-medium t-dash">Dash</span>
+        </button>
+        <button onclick="router.navigate('fuel')" class="nav-btn p-2 flex flex-col items-center text-slate-400 transition duration-300" data-page="fuel">
+            <span class="material-icons text-2xl mb-0.5">local_gas_station</span>
+            <span class="text-[10px] font-medium t-fuel">Fuel</span>
+        </button>
+         <button onclick="router.navigate('parking')" class="nav-btn p-2 flex flex-col items-center text-slate-400 transition duration-300" data-page="parking">
+            <span class="material-icons text-2xl mb-0.5">local_parking</span>
+            <span class="text-[10px] font-medium t-parking">Park</span>
+        </button>
+        <button onclick="router.navigate('maintenance')" class="nav-btn p-2 flex flex-col items-center text-slate-400 transition duration-300" data-page="maintenance">
+            <span class="material-icons text-2xl mb-0.5">build</span>
+            <span class="text-[10px] font-medium t-service">Service+</span>
+        </button>
+        <button onclick="router.navigate('analytics')" class="nav-btn p-2 flex flex-col items-center text-slate-400 transition duration-300" data-page="analytics">
+            <span class="material-icons text-2xl mb-0.5">pie_chart</span>
+            <span class="text-[10px] font-medium t-analytics">Analytics</span>
+        </button>
+        <button onclick="router.navigate('settings')" class="nav-btn p-2 flex flex-col items-center text-slate-400 transition duration-300" data-page="settings">
+            <span class="material-icons text-2xl mb-0.5">settings</span>
+            <span class="text-[10px] font-medium t-settings">Settings</span>
+        </button>
     </nav>
 
-    <!-- OVERLAYS / MODALS -->
-    <div id="modal-container" class="fixed inset-0 z-[100] hidden">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="ui.closeModal()"></div>
-        <div id="modal-content" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 pb-12 slide-up max-h-[90dvh] overflow-y-auto">
-            <!-- Modal Body -->
+    <!-- Modals -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div id="modal-content" class="bg-white rounded-3xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden max-h-[90vh] overflow-y-auto">
+            <!-- Modal Content Injected Here -->
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
-    /**
-     * TRANSLATIONS
-     */
-    const translations = {
-        en: {
-            nav_dash: 'Dash', nav_fuel: 'Fuel', nav_parking: 'Parking', nav_service: 'Service+', nav_stats: 'Stats', nav_settings: 'Settings',
-            welcome: 'Welcome back', no_vehicle: 'No Vehicle', add_vehicle: 'Add Vehicle', add_vehicle_plus: 'Add Vehicle +',
-            efficiency: 'Efficiency', total_spent: 'Total Spent', last_30: 'Last 30 days', lifetime: 'Lifetime',
-            quick_actions: 'Quick Actions', log_fuel: 'Add Fuel', log_service: 'Log Service',
-            recent_activity: 'Recent Activity', no_logs: 'No logs in this period.',
-            title_fuel: 'Fuel Log', title_service: 'Service / License', title_parking: 'Parking', title_analytics: 'Analytics', title_settings: 'Settings',
-            vehicle_details: 'My Vehicles', preferences: 'Preferences', data: 'Data',
-            currency: 'Currency', units: 'Units', language: 'Language',
-            export_json: 'Export Data (JSON)', import_json: 'Import Data (JSON)',
-            import_success: 'Data imported successfully!', import_error: 'Invalid file format.',
-            make: 'Make', model: 'Model', year: 'Year', odometer: 'Odometer',
-            save_vehicle: 'Save Vehicle', save_log: 'Save Log', save_entry: 'Save Entry',
-            date: 'Date', cost: 'Total Cost', volume: 'Volume', location: 'Location',
-            service_type: 'Service Type', note: 'Note / Description',
-            type_maint: 'Maintenance / Repair', type_parking: 'Parking',
-            type_license: 'License Renewal', type_insurance: 'Insurance Renewal', type_registration: 'Registration',
-            confirm_delete: 'Are you sure you want to delete this record?',
-            unit_metric: 'Metric (L, km)', unit_imperial: 'Imperial (Gal, mi)',
-            fuel: 'Fuel', service: 'Service', parking: 'Parking',
-            expense_breakdown: 'Expense Breakdown', fuel_eff_trend: 'Fuel Efficiency Trend',
-            vehicle_placeholder_make: 'Toyota', vehicle_placeholder_model: 'Camry',
-            log_placeholder_note: 'Oil Change, Tire Rotation...', location_placeholder: 'Station Name (e.g. Shell)',
-            no_vehicle_desc: 'Add a vehicle to start tracking fuel and maintenance.',
-            price_per_unit_l: 'Price per Liter', price_per_unit_g: 'Price per Gallon',
-            prev_dist: 'Distance', waiting_data: 'More data needed',
-            range_month: 'This Month', range_year: 'This Year', range_all: 'All Time',
-            cost_km: 'Cost / km', total_dist: 'Total Dist',
-            edit_vehicle: 'Edit Vehicle', edit_record: 'Edit Record',
-            save_changes: 'Save Changes', cancel: 'Cancel', delete: 'Delete',
-            license_exp: 'License Expiry', license_cost: 'Renewal Cost',
-            insurance_exp: 'Insurance Expiry', insurance_cost: 'Renewal Cost',
-            registration_exp: 'Registration Expiry', registration_cost: 'Registration Cost',
-            reminders: 'Reminders', expired: 'Expired', days_left: 'days left',
-            fixed_costs: 'Annual Fixed Costs', section_fixed: 'Fixed Costs & Expiry',
-            detecting: 'Locating...', geo_error: 'Location not found',
-            new_expiry: 'New Expiry Date',
-            calendar_export: 'Add to Calendar', no_reminders: 'No future expiries found',
-            calendar_added: 'Reminders exported. Open file to add to Calendar.',
-            clear_history: 'Clear Vehicle History',
-            clear_warn_1: 'Are you sure? This deletes ALL fuel, service, and parking logs for this vehicle.',
-            clear_warn_2: 'Final Confirmation: This cannot be undone.',
-            history_cleared: 'All vehicle records cleared.'
-        },
-        zh: {
-            nav_dash: '首頁', nav_fuel: '加油', nav_parking: '停車', nav_service: '維修/其他', nav_stats: '統計', nav_settings: '設定',
-            welcome: '歡迎回來', no_vehicle: '未新增車輛', add_vehicle: '新增車輛', add_vehicle_plus: '新增車輛 +',
-            efficiency: '油耗表現', total_spent: '總花費', last_30: '過去 30 天', lifetime: '生涯累計',
-            quick_actions: '快速功能', log_fuel: '新增加油', log_service: '新增紀錄',
-            recent_activity: '近期動態', no_logs: '此期間尚無紀錄',
-            title_fuel: '加油紀錄', title_service: '維修保養/牌照', title_parking: '停車紀錄', title_analytics: '統計圖表', title_settings: '設定選項',
-            vehicle_details: '我的車輛', preferences: '偏好設定', data: '資料管理',
-            currency: '貨幣單位', units: '度量單位', language: '語言 (Language)',
-            export_json: '匯出資料 (JSON)', import_json: '匯入資料 (JSON)',
-            import_success: '資料匯入成功！', import_error: '檔案格式錯誤。',
-            make: '廠牌', model: '車型', year: '年份', odometer: '里程數',
-            save_vehicle: '儲存車輛', save_log: '儲存紀錄', save_entry: '儲存項目',
-            date: '日期', cost: '總金額', volume: '油量', location: '地點',
-            service_type: '類別', note: '備註 / 描述',
-            type_maint: '維修保養', type_parking: '停車費',
-            type_license: '車牌續期', type_insurance: '保險續期', type_registration: '車輛登記',
-            confirm_delete: '確定刪除此項目？',
-            unit_metric: '公制 (公升, 公里)', unit_imperial: '英制 (加侖, 英里)',
-            fuel: '加油', service: '維修', parking: '停車',
-            expense_breakdown: '花費分佈', fuel_eff_trend: '油耗趨勢',
-            vehicle_placeholder_make: 'Toyota', vehicle_placeholder_model: 'Corolla',
-            log_placeholder_note: '換機油、輪胎對調...', location_placeholder: '地點名稱 (例如：Shell 加油站)',
-            no_vehicle_desc: '請新增車輛以開始追蹤油耗與保養紀錄。',
-            price_per_unit_l: '單價（每公升）', price_per_unit_g: '單價（每加侖）',
-            prev_dist: '行駛距離', waiting_data: '等待更多記錄',
-            range_month: '本月', range_year: '今年', range_all: '全部',
-            cost_km: '每公里成本', total_dist: '總里程',
-            edit_vehicle: '編輯車輛', edit_record: '編輯紀錄',
-            save_changes: '保存修改', cancel: '取消', delete: '刪除',
-            license_exp: '車牌到期', license_cost: '車牌費用',
-            insurance_exp: '保險到期', insurance_cost: '保險費用',
-            registration_exp: '登記到期', registration_cost: '登記費用',
-            reminders: '提醒通知', expired: '已過期', days_left: '天後到期',
-            fixed_costs: '年度固定支出', section_fixed: '車牌與保險',
-            detecting: '定位中...', geo_error: '無法獲取位置',
-            new_expiry: '新到期日',
-            calendar_export: '加入行事曆', no_reminders: '沒有即將到期的項目',
-            calendar_added: '已下載提醒事項，請開啟檔案以加入行事曆。',
-            clear_history: '清除歷史紀錄',
-            clear_warn_1: '您確定嗎？這將永久刪除此車輛的所有加油、維修和停車紀錄。',
-            clear_warn_2: '再次確認：此操作無法撤銷。',
-            history_cleared: '所有車輛紀錄已清除。'
-        }
-    };
+        /* --- TRANSLATIONS --- */
+        const translations = {
+            en: {
+                t_dash: "Dash", t_fuel: "Fuel", t_service: "Service+", t_parking: "Park", t_analytics: "Analytics", t_settings: "Settings",
+                welcome: "Welcome to FuelMate", no_vehicle: "No vehicle added", add_first: "Add your first vehicle to get started",
+                add_vehicle: "Add Vehicle", edit_vehicle: "Edit Vehicle", select_vehicle: "Select Vehicle",
+                this_month: "This Month", this_year: "This Year", all_time: "All Time",
+                efficiency: "EFFICIENCY", cost_km: "COST/KM", total_cost: "TOTAL COST", total_distance: "TOTAL DISTANCE",
+                reminders: "Reminders", expiring_soon: "Expiring Soon", expired: "Expired", days_left: "days left",
+                add_fuel: "Add Fuel", add_service: "Add Service",
+                recent_activity: "RECENT ACTIVITY", no_records: "No records yet",
+                date: "DATE", odometer: "ODOMETER", liters: "LITERS", gallons: "GALLONS", cost: "COST", price_unit: "PRICE/UNIT",
+                fuel_type: "FUEL TYPE", location: "LOCATION", notes: "NOTES", type: "TYPE",
+                save: "Save", cancel: "Cancel", delete: "Delete", edit: "Edit", clear_history: "Clear History",
+                confirm_delete: "Are you sure you want to delete this record?",
+                confirm_clear_1: "WARNING: This will delete ALL Fuel, Service, and Parking logs for this vehicle.",
+                confirm_clear_2: "Are you absolutely sure? This cannot be undone.",
+                settings_title: "Settings", manage_vehicles: "Manage Vehicles", app_settings: "App Settings",
+                units: "Units", currency: "Currency", language: "Language",
+                export_json: "Export Data (JSON)", import_json: "Import Data (JSON)",
+                import_success: "Data imported successfully!", import_error: "Invalid JSON file.",
+                confirm_overwrite: "WARNING: This will overwrite all current data. Are you sure?",
+                license_renewal: "License Renewal", insurance_renewal: "Insurance Renewal", registration: "Vehicle Registration",
+                new_expiry: "NEW EXPIRY DATE", detect_loc: "Detect",
+                parking_cost: "PARKING COST", service_cost: "SERVICE COST", fixed_costs: "FIXED COSTS",
+                maintenance: "Maintenance"
+            },
+            zh: {
+                t_dash: "首頁", t_fuel: "加油", t_service: "維修/其他", t_parking: "停車", t_analytics: "統計", t_settings: "設定",
+                welcome: "歡迎使用 FuelMate", no_vehicle: "尚未添加車輛", add_first: "添加您的第一輛車以開始使用",
+                add_vehicle: "新增車輛", edit_vehicle: "編輯車輛", select_vehicle: "選擇車輛",
+                this_month: "本月", this_year: "今年", all_time: "全部",
+                efficiency: "油耗表現", cost_km: "每公里成本", total_cost: "總支出", total_distance: "總里程",
+                reminders: "提醒通知", expiring_soon: "即將到期", expired: "已過期", days_left: "天後到期",
+                add_fuel: "新增加油", add_service: "新增維修",
+                recent_activity: "近期活動", no_records: "等待更多記錄",
+                date: "日期", odometer: "里程", liters: "公升", gallons: "加侖", cost: "金額", price_unit: "單價",
+                fuel_type: "燃油種類", location: "地點", notes: "備註", type: "類型",
+                save: "保存", cancel: "取消", delete: "刪除", edit: "編輯", clear_history: "清除所有紀錄",
+                confirm_delete: "確定要刪除此記錄嗎？",
+                confirm_clear_1: "警告：這將刪除此車輛的所有加油、維修和停車記錄。",
+                confirm_clear_2: "您確定要繼續嗎？此操作無法撤銷。",
+                settings_title: "設定", manage_vehicles: "車輛管理", app_settings: "應用設定",
+                units: "單位", currency: "貨幣", language: "語言",
+                export_json: "匯出資料 (JSON)", import_json: "匯入資料 (JSON)",
+                import_success: "資料匯入成功！", import_error: "無效的 JSON 文件。",
+                confirm_overwrite: "警告：這將覆蓋當前所有數據。您確定要繼續嗎？",
+                license_renewal: "車牌續期", insurance_renewal: "保險續期", registration: "車輛登記",
+                new_expiry: "新到期日", detect_loc: "定位",
+                parking_cost: "停車總支出", service_cost: "維修總支出", fixed_costs: "固定支出 (牌照/保險)",
+                maintenance: "維修保養/牌照"
+            }
+        };
 
-    /**
-     * DATA STORE & UTILS
-     */
-    const store = {
-        dashboardFilter: 'month', // 'month' | 'year' | 'all'
-        pageFilters: {
-            fuel: 'month',
-            service: 'month',
-            parking: 'month'
-        },
-        data: {
-            vehicles: [],
-            logs: [], 
-            settings: {
-                activeVehicleId: null,
-                unitSystem: 'metric', 
-                currency: '$',
-                language: 'en' 
-            }
-        },
-        
-        init() {
-            const saved = localStorage.getItem('fuelmate_data');
-            if (saved) {
-                this.data = JSON.parse(saved);
-            }
-            if (this.data.vehicles.length > 0 && !this.data.settings.activeVehicleId) {
-                this.data.settings.activeVehicleId = this.data.vehicles[0].id;
+        /* --- STORE --- */
+        const store = {
+            data: {
+                vehicles: [],
+                logs: [],
+                settings: { activeVehicleId: null, units: 'metric', currency: '$', language: 'en' }
+            },
+            pageFilters: {
+                fuel: 'month',
+                maintenance: 'month',
+                parking: 'month'
+            },
+            init() {
+                const saved = localStorage.getItem('fuelmate_data');
+                if (saved) this.data = JSON.parse(saved);
+                // Migration: ensure settings has language
+                if (!this.data.settings.language) this.data.settings.language = 'en';
+            },
+            save() {
+                localStorage.setItem('fuelmate_data', JSON.stringify(this.data));
+                ui.render();
+            },
+            addVehicle(vehicle) {
+                this.data.vehicles.push(vehicle);
+                if (!this.data.settings.activeVehicleId) this.data.settings.activeVehicleId = vehicle.id;
                 this.save();
-            }
-            if (!this.data.settings.language) {
-                this.data.settings.language = 'en';
-                this.save();
-            }
-        },
-
-        save() {
-            localStorage.setItem('fuelmate_data', JSON.stringify(this.data));
-        },
-
-        addVehicle(vehicle) {
-            vehicle.id = Date.now().toString();
-            this.data.vehicles.push(vehicle);
-            if (!this.data.settings.activeVehicleId) {
-                this.data.settings.activeVehicleId = vehicle.id;
-            }
-            this.save();
-            return vehicle;
-        },
-
-        updateVehicle(updatedVehicle) {
-            const index = this.data.vehicles.findIndex(v => v.id === updatedVehicle.id);
-            if (index !== -1) {
-                this.data.vehicles[index] = { ...this.data.vehicles[index], ...updatedVehicle };
-                this.save();
-            }
-        },
-
-        addLog(log) {
-            log.id = Date.now().toString();
-            const v = this.getVehicle(log.vehicleId);
-            if (v && log.odometer > v.currentOdometer) {
-                v.currentOdometer = parseInt(log.odometer);
-            }
-            this.data.logs.push(log);
-            this.data.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
-            this.save();
-        },
-
-        updateLog(updatedLog) {
-            const index = this.data.logs.findIndex(l => l.id === updatedLog.id);
-            if (index !== -1) {
-                this.data.logs[index] = updatedLog;
-                const v = this.getVehicle(updatedLog.vehicleId);
-                if (v && updatedLog.odometer > v.currentOdometer) {
-                    v.currentOdometer = parseInt(updatedLog.odometer);
+            },
+            updateVehicle(vehicle) {
+                const idx = this.data.vehicles.findIndex(v => v.id === vehicle.id);
+                if (idx !== -1) {
+                    this.data.vehicles[idx] = vehicle;
+                    this.save();
                 }
-                this.data.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
-                this.save();
-            }
-        },
-
-        deleteLog(id) {
-            this.data.logs = this.data.logs.filter(l => l.id !== id);
-            this.save();
-        },
-
-        clearVehicleLogs(vehicleId) {
-            this.data.logs = this.data.logs.filter(l => l.vehicleId !== vehicleId);
-            this.save();
-        },
-
-        getLog(id) {
-            return this.data.logs.find(l => l.id === id);
-        },
-        
-        getActiveVehicle() {
-            return this.data.vehicles.find(v => v.id === this.data.settings.activeVehicleId);
-        },
-
-        getVehicle(id) {
-            return this.data.vehicles.find(v => v.id === id);
-        },
-
-        getLogs(vehicleId, type = null) {
-            return this.data.logs.filter(l => {
-                if (l.vehicleId !== vehicleId) return false;
-                if (type && l.type !== type) return false;
-                return true;
-            });
-        },
-
-        getLatestLog(vehicleId, type) {
-            const logs = this.getLogs(vehicleId, type);
-            // getLogs already sorts by date DESC, so logs[0] is the latest
-            return logs.length > 0 ? logs[0] : null;
-        },
-
-        exportData() {
-            const str = JSON.stringify(this.data);
-            const blob = new Blob([str], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `fuelmate_backup_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-        },
-
-        importData(jsonStr) {
-            try {
-                const data = JSON.parse(jsonStr);
-                if (!Array.isArray(data.vehicles) || !Array.isArray(data.logs) || !data.settings) {
-                    return false;
+            },
+            deleteVehicle(id) {
+                this.data.vehicles = this.data.vehicles.filter(v => v.id !== id);
+                this.data.logs = this.data.logs.filter(l => l.vehicleId !== id);
+                if (this.data.settings.activeVehicleId === id) {
+                    this.data.settings.activeVehicleId = this.data.vehicles.length > 0 ? this.data.vehicles[0].id : null;
                 }
-                this.data = data;
                 this.save();
-                return true;
-            } catch (e) {
-                console.error(e);
-                return false;
-            }
-        }
-    };
-
-    const utils = {
-        t(key) {
-            const lang = store.data.settings.language || 'en';
-            return translations[lang][key] || key;
-        },
-        formatCurrency(amount) {
-            const symbol = store.data.settings.currency;
-            return `${symbol}${parseFloat(amount || 0).toFixed(2)}`;
-        },
-        formatDist(dist) {
-            const unit = store.data.settings.unitSystem === 'metric' ? 'km' : 'mi';
-            return `${parseInt(dist || 0).toLocaleString()} ${unit}`;
-        },
-        formatFuel(vol) {
-            const unit = store.data.settings.unitSystem === 'metric' ? 'L' : 'gal';
-            return `${parseFloat(vol || 0).toFixed(1)} ${unit}`;
-        },
-        filterLogsByRange(logs, timeRange) {
-            const now = new Date();
-            let startDate = new Date(0);
-            if (timeRange === 'month') startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-            else if (timeRange === 'year') startDate = new Date(now.getFullYear(), 0, 1);
-            return logs.filter(l => new Date(l.date) >= startDate);
-        },
-        calculateStats(vehicleId, timeRange = 'month') {
-            const allLogs = this.filterLogsByRange(store.getLogs(vehicleId), timeRange);
-            const totalCost = allLogs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
-            const fuelLogs = allLogs.filter(l => l.type === 'fuel').sort((a, b) => a.odometer - b.odometer);
-
-            let totalDist = 0;
-            let totalVol = 0;
-
-            if (fuelLogs.length > 1) {
-                totalDist = fuelLogs[fuelLogs.length - 1].odometer - fuelLogs[0].odometer;
-                totalVol = fuelLogs.reduce((sum, l) => sum + parseFloat(l.liters), 0); 
-            }
-
-            let efficiency = '--';
-            let costPerKm = '--';
-
-            if (totalDist > 0 && totalVol > 0) {
-                if (store.data.settings.unitSystem === 'metric') {
-                    const l100 = (totalVol / totalDist) * 100;
-                    efficiency = `${l100.toFixed(1)} L/100km`;
-                    costPerKm = `${store.data.settings.currency}${(totalCost / totalDist).toFixed(2)}/km`;
-                } else {
-                    const mpg = totalDist / totalVol; 
-                    efficiency = `${mpg.toFixed(1)} MPG`;
-                    costPerKm = `${store.data.settings.currency}${(totalCost / totalDist).toFixed(2)}/mi`;
+            },
+            clearVehicleLogs(vid) {
+                this.data.logs = this.data.logs.filter(l => l.vehicleId !== vid);
+                this.save();
+            },
+            addLog(log) {
+                this.data.logs.push(log);
+                // Update vehicle odometer if higher
+                const vehicle = this.getActiveVehicle();
+                if (vehicle && log.odometer > vehicle.currentOdometer) {
+                    vehicle.currentOdometer = parseInt(log.odometer);
                 }
+                this.save();
+            },
+            updateLog(log) {
+                const idx = this.data.logs.findIndex(l => l.id === log.id);
+                if (idx !== -1) {
+                    this.data.logs[idx] = log;
+                    // Re-check odometer
+                    const vehicle = this.getActiveVehicle();
+                    const maxOdo = Math.max(...this.data.logs.filter(l => l.vehicleId === vehicle.id).map(l => parseInt(l.odometer) || 0));
+                    vehicle.currentOdometer = maxOdo;
+                    this.save();
+                }
+            },
+            deleteLog(id) {
+                this.data.logs = this.data.logs.filter(l => l.id !== id);
+                this.save();
+            },
+            getActiveVehicle() {
+                return this.data.vehicles.find(v => v.id === this.data.settings.activeVehicleId);
+            },
+            getVehicleLogs(type = null) {
+                let logs = this.data.logs.filter(l => l.vehicleId === this.data.settings.activeVehicleId);
+                if (type) {
+                    if (type === 'maintenance') {
+                        // Maintenance includes repairs, license, insurance, registration
+                        return logs.filter(l => ['maintenance', 'license', 'insurance', 'registration'].includes(l.type));
+                    }
+                    return logs.filter(l => l.type === type);
+                }
+                return logs.sort((a, b) => new Date(b.date) - new Date(a.date));
             }
-            return { efficiency, costPerKm, totalCost, totalDist };
-        },
-        async getCurrentLocation() {
-            return new Promise((resolve) => {
-                if (!navigator.geolocation) resolve(null);
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-                    (err) => resolve(null)
-                );
-            });
-        },
-        async reverseGeocode(lat, lng) {
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
-                if (!res.ok) return null;
-                const data = await res.json();
+        };
+
+        /* --- UTILS --- */
+        const utils = {
+            t(key) {
+                const lang = store.data.settings.language || 'en';
+                return translations[lang][key] || key;
+            },
+            uuid() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            },
+            formatCurrency(amount) {
+                return `${store.data.settings.currency}${parseFloat(amount).toFixed(2)}`;
+            },
+            formatDate(dateStr) {
+                const date = new Date(dateStr);
+                const lang = store.data.settings.language;
+                if (lang === 'zh') {
+                    return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
+                }
+                return date.toLocaleDateString('en-GB'); // DD/MM/YYYY
+            },
+            calculateStats(range, category = 'all') {
+                const logs = store.getVehicleLogs(); // Get all logs for vehicle
+                const now = new Date();
+                let filtered = logs;
+
+                // 1. Date Filter
+                if (range === 'month') {
+                    filtered = logs.filter(l => {
+                        const d = new Date(l.date);
+                        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                    });
+                } else if (range === 'year') {
+                    filtered = logs.filter(l => new Date(l.date).getFullYear() === now.getFullYear());
+                }
+
+                // 2. Category Filter
+                if (category === 'fuel') {
+                    filtered = filtered.filter(l => l.type === 'fuel');
+                } else if (category === 'maintenance') {
+                    filtered = filtered.filter(l => ['maintenance', 'license', 'insurance', 'registration'].includes(l.type));
+                } else if (category === 'parking') {
+                    filtered = filtered.filter(l => l.type === 'parking');
+                }
+                // 'all' includes everything
+
+                const totalCost = filtered.reduce((sum, l) => sum + parseFloat(l.cost || 0), 0);
                 
-                const name = data.name;
-                const addr = data.address || {};
-                const road = addr.road || addr.pedestrian || addr.highway;
-                const suburb = addr.suburb || addr.city_district || addr.town || addr.city;
+                // Distance calculation (Log based)
+                let totalDist = 0;
+                if (filtered.length > 1) {
+                    const sorted = [...filtered].sort((a, b) => a.odometer - b.odometer);
+                    const min = sorted[0].odometer;
+                    const max = sorted[sorted.length - 1].odometer;
+                    totalDist = max - min;
+                }
+
+                // Fuel Efficiency (Simple avg)
+                let efficiency = 0;
+                let costPerKm = 0;
                 
-                if (name) return name;
-                if (road) return `${road}, ${suburb || ''}`;
-                return suburb || data.display_name.split(',')[0];
-            } catch (e) {
-                console.error(e);
-                return null;
+                if (category === 'fuel' || category === 'all') {
+                    const fuelLogs = filtered.filter(l => l.type === 'fuel').sort((a,b) => a.odometer - b.odometer);
+                    if (fuelLogs.length > 1) {
+                        let totalFuel = 0;
+                        let dist = fuelLogs[fuelLogs.length-1].odometer - fuelLogs[0].odometer;
+                        // Sum fuel excluding the first one (as it starts the period) or simple sum? 
+                        // Simple sum for chart is okay, but for exact L/100km we usually need span.
+                        // Let's use: Sum(Liters) / Sum(Dist)
+                        for(let i=0; i<fuelLogs.length-1; i++){
+                             totalFuel += parseFloat(fuelLogs[i].liters);
+                        }
+                         // Simplified: Total Liters / Total Dist * 100
+                         // Use full sum for expense, but for efficiency use span
+                        const vol = fuelLogs.reduce((a,b)=>a+parseFloat(b.liters),0);
+                        if(dist > 0) {
+                            efficiency = (vol / dist) * 100;
+                            costPerKm = totalCost / dist;
+                        }
+                    }
+                }
+                
+                if (category !== 'fuel' && totalDist > 0) {
+                     costPerKm = totalCost / totalDist;
+                }
+
+                return { totalCost, totalDist, efficiency, costPerKm };
+            },
+            filterLogs(logs, range) {
+                const now = new Date();
+                if (range === 'month') {
+                    return logs.filter(l => {
+                        const d = new Date(l.date);
+                        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                    });
+                }
+                if (range === 'year') {
+                    return logs.filter(l => new Date(l.date).getFullYear() === now.getFullYear());
+                }
+                return logs;
+            },
+            exportCalendar() {
+                const vehicle = store.getActiveVehicle();
+                if(!vehicle) return;
+                const logs = store.getVehicleLogs().filter(l => ['license', 'insurance', 'registration'].includes(l.type) && l.expiryDate);
+                
+                // Find latest expiry for each type
+                const latest = {};
+                logs.forEach(l => {
+                    if (!latest[l.type] || new Date(l.expiryDate) > new Date(latest[l.type].expiryDate)) {
+                        latest[l.type] = l;
+                    }
+                });
+
+                let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//FuelMate//EN\n";
+                Object.values(latest).forEach(l => {
+                    const date = l.expiryDate.replace(/-/g, '');
+                    const title = utils.t(l.type === 'license' ? 'license_renewal' : (l.type === 'insurance' ? 'insurance_renewal' : 'registration')) + ` - ${vehicle.make}`;
+                    icsContent += "BEGIN:VEVENT\n";
+                    icsContent += `DTSTART;VALUE=DATE:${date}\n`;
+                    icsContent += `SUMMARY:${title}\n`;
+                    icsContent += `DESCRIPTION:Vehicle: ${vehicle.make} ${vehicle.model}\n`;
+                    icsContent += "END:VEVENT\n";
+                });
+                icsContent += "END:VCALENDAR";
+
+                const blob = new Blob([icsContent], { type: 'text/calendar' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'vehicle_reminders.ics';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             }
-        },
-        getDaysLeft(dateStr) {
-            if (!dateStr) return null;
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            const target = new Date(dateStr);
-            target.setHours(0,0,0,0);
-            const diffTime = target - today;
-            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        }
-    };
+        };
 
-    const t = utils.t;
-
-    /**
-     * ROUTER & UI RENDERER
-     */
-    const router = {
-        current: 'dashboard',
-        navigate(route) {
-            this.current = route;
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('text-primary');
-                btn.classList.add('text-slate-400');
-            });
-            const activeBtn = document.getElementById(`nav-${route}`);
-            if(activeBtn) {
-                activeBtn.classList.remove('text-slate-400');
-                activeBtn.classList.add('text-primary');
-            }
-
-            document.getElementById('nav-txt-dashboard').textContent = t('nav_dash');
-            document.getElementById('nav-txt-fuel').textContent = t('nav_fuel');
-            document.getElementById('nav-txt-parking').textContent = t('nav_parking');
-            document.getElementById('nav-txt-service').textContent = t('nav_service');
-            document.getElementById('nav-txt-stats').textContent = t('nav_stats');
-            document.getElementById('nav-txt-settings').textContent = t('nav_settings');
-
-            const main = document.getElementById('main-content');
-            main.innerHTML = ''; 
-            window.scrollTo(0, 0); // Reset scroll
+        /* --- UI RENDERER --- */
+        const ui = {
+            currentPage: 'dashboard',
             
-            switch(route) {
-                case 'dashboard': ui.renderDashboard(main); break;
-                case 'fuel': ui.renderFuel(main); break;
-                case 'parking': ui.renderParking(main); break;
-                case 'maintenance': ui.renderMaintenance(main); break;
-                case 'analytics': ui.renderAnalytics(main); break;
-                case 'settings': ui.renderSettings(main); break;
-            }
-        }
-    };
+            render() {
+                const app = document.getElementById('app');
+                const vehicle = store.getActiveVehicle();
+                
+                // Highlight Nav
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    const active = btn.dataset.page === this.currentPage;
+                    btn.className = `nav-btn p-2 flex flex-col items-center transition duration-300 ${active ? 'text-sky-600' : 'text-slate-400'}`;
+                });
 
-    const ui = {
-        setDashFilter(filter) {
-            store.dashboardFilter = filter;
-            this.renderDashboard(document.getElementById('main-content'));
-        },
-        setPageFilter(page, filter) {
-            store.pageFilters[page] = filter;
-            const main = document.getElementById('main-content');
-            if (page === 'fuel') this.renderFuel(main);
-            else if (page === 'service') this.renderMaintenance(main);
-            else if (page === 'parking') this.renderParking(main);
-        },
-        renderDashboard(container) {
-            const activeCar = store.getActiveVehicle();
-            
-            let html = `
-                <div class="relative bg-gradient-to-br from-teal-500 to-blue-600 text-white pt-[calc(env(safe-area-inset-top)+20px)] pb-16 rounded-b-[2.5rem] shadow-lg">
-                    <div class="px-6 mb-6 flex justify-between items-center">
-                        <div>
-                            <p class="text-teal-100 text-sm font-medium">${t('welcome')}</p>
-                            <h1 class="text-2xl font-bold flex items-center gap-2" onclick="router.navigate('settings')">
-                                ${activeCar ? `${activeCar.year} ${activeCar.model}` : t('no_vehicle')}
-                                <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </h1>
+                if (!vehicle && this.currentPage !== 'settings') {
+                    app.innerHTML = this.renderNoVehicleState();
+                    return;
+                }
+
+                if (this.currentPage === 'dashboard') this.renderDashboard(app, vehicle);
+                else if (this.currentPage === 'fuel') this.renderFuel(app, vehicle);
+                else if (this.currentPage === 'maintenance') this.renderMaintenance(app, vehicle);
+                else if (this.currentPage === 'parking') this.renderParking(app, vehicle);
+                else if (this.currentPage === 'analytics') this.renderAnalytics(app, vehicle);
+                else if (this.currentPage === 'settings') this.renderSettings(app);
+            },
+
+            renderNoVehicleState() {
+                return `
+                    <div class="h-screen flex flex-col items-center justify-center p-8 text-center">
+                        <div class="w-24 h-24 bg-sky-100 rounded-full flex items-center justify-center mb-6 animate-bounce">
+                            <span class="material-icons text-5xl text-sky-600">directions_car</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="ui.exportToCalendar()" class="bg-white/20 p-2 rounded-full backdrop-blur-sm active:bg-white/30 transition">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <h2 class="text-2xl font-bold mb-2 text-slate-800">${utils.t('welcome')}</h2>
+                        <p class="text-slate-500 mb-8">${utils.t('add_first')}</p>
+                        <button onclick="ui.openAddVehicle()" class="bg-sky-500 text-white px-8 py-3 rounded-2xl shadow-lg shadow-sky-200 font-semibold active:scale-95 transition transform">
+                            ${utils.t('add_vehicle')}
+                        </button>
+                    </div>
+                `;
+            },
+
+            renderDashboard(container, vehicle) {
+                // 1. Calculate Stats
+                const stats = utils.calculateStats('month', 'all'); // Month stats for dashboard top
+                
+                // 2. Reminders
+                const logs = store.getVehicleLogs();
+                const reminderTypes = ['license', 'insurance', 'registration'];
+                const reminders = [];
+                
+                reminderTypes.forEach(type => {
+                    const typeLogs = logs.filter(l => l.type === type && l.expiryDate);
+                    if (typeLogs.length > 0) {
+                        // Get latest
+                        const latest = typeLogs.sort((a,b) => new Date(b.expiryDate) - new Date(a.expiryDate))[0];
+                        const days = Math.ceil((new Date(latest.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+                        if (days <= 30) {
+                            reminders.push({ ...latest, days });
+                        }
+                    }
+                });
+
+                // 3. Recent Activity
+                const recentLogs = store.getVehicleLogs().slice(0, 5);
+
+                container.innerHTML = `
+                    <!-- Header -->
+                    <div class="bg-gradient-to-br from-cyan-500 to-blue-600 pb-8 rounded-b-[2.5rem] shadow-xl relative overflow-hidden">
+                         <!-- Decorative Circles -->
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                        <div class="absolute bottom-0 left-0 w-48 h-48 bg-black/5 rounded-full -ml-10 -mb-10 blur-2xl"></div>
+
+                        <div class="flex justify-between items-start pt-safe px-6 pb-12 text-white relative z-10">
+                            <div class="flex-1">
+                                <div class="text-sm opacity-80 font-medium tracking-wider mb-1">${vehicle.year} ${vehicle.make}</div>
+                                <button onclick="ui.openVehicleSelector()" class="text-3xl font-bold flex items-center gap-2">
+                                    ${vehicle.model}
+                                    <span class="material-icons text-2xl opacity-80">expand_circle_down</span>
+                                </button>
+                            </div>
+                             <div class="flex gap-2">
+                                <button onclick="utils.exportCalendar()" class="bg-white/20 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-sm hover:bg-white/30 transition">
+                                    <span class="material-icons text-white text-xl">event</span>
+                                </button>
+                                <button onclick="ui.openAddVehicle('${vehicle.id}')" class="bg-white/20 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-sm hover:bg-white/30 transition">
+                                    <span class="material-icons text-white text-xl">edit</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Time Filter Pills -->
+                         <div class="absolute bottom-6 left-0 w-full flex justify-center z-20">
+                             <div class="bg-black/20 backdrop-blur-md p-1 rounded-full flex text-xs font-medium">
+                                 <button onclick="store.dashboardFilter='month';ui.render()" class="${store.dashboardFilter==='month'?'bg-white text-sky-600 shadow-sm':'text-white/80 hover:bg-white/10'} px-4 py-1.5 rounded-full transition-all">${utils.t('this_month')}</button>
+                                 <button onclick="store.dashboardFilter='year';ui.render()" class="${store.dashboardFilter==='year'?'bg-white text-sky-600 shadow-sm':'text-white/80 hover:bg-white/10'} px-4 py-1.5 rounded-full transition-all">${utils.t('this_year')}</button>
+                                 <button onclick="store.dashboardFilter='all';ui.render()" class="${store.dashboardFilter==='all'?'bg-white text-sky-600 shadow-sm':'text-white/80 hover:bg-white/10'} px-4 py-1.5 rounded-full transition-all">${utils.t('all_time')}</button>
+                             </div>
+                         </div>
+                    </div>
+
+                    <div class="px-4 mt-2 relative z-30 space-y-4 pb-24">
+                        
+                        <!-- Reminders -->
+                        ${reminders.length > 0 ? `
+                            <div class="bg-orange-50 border-l-4 border-orange-500 rounded-xl p-4 card-shadow mb-4">
+                                <div class="flex items-center gap-2 mb-2 text-orange-700 font-bold text-sm uppercase">
+                                    <span class="material-icons text-lg">notifications_active</span>
+                                    ${utils.t('reminders')}
+                                </div>
+                                ${reminders.map(r => `
+                                    <div class="flex justify-between items-center text-sm py-1 border-b border-orange-100 last:border-0">
+                                        <span class="text-slate-700">${utils.t(r.type === 'license' ? 'license_renewal' : (r.type === 'insurance' ? 'insurance_renewal' : 'registration'))}</span>
+                                        <span class="${r.days < 0 ? 'text-red-600 font-bold' : (r.days < 15 ? 'text-orange-600 font-bold' : 'text-green-600')}">
+                                            ${r.days < 0 ? utils.t('expired') : `${r.days} ${utils.t('days_left')}`}
+                                        </span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        <!-- Stats Grid -->
+                        ${this.renderStatsGrid(store.dashboardFilter || 'month', 'all')}
+
+                        <!-- Quick Actions -->
+                        <div class="grid grid-cols-2 gap-4 mt-2">
+                            <button onclick="ui.openAddFuel()" class="bg-teal-600 text-white p-4 rounded-2xl shadow-lg shadow-teal-200 flex flex-col items-center justify-center gap-2 active:scale-95 transition transform">
+                                <span class="material-icons text-3xl">local_gas_station</span>
+                                <span class="font-semibold">${utils.t('add_fuel')}</span>
                             </button>
-                            <div class="bg-white/20 p-2 rounded-full backdrop-blur-sm">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                            </div>
+                            <button onclick="ui.openAddService()" class="bg-white text-slate-600 p-4 rounded-2xl card-shadow flex flex-col items-center justify-center gap-2 active:scale-95 transition transform">
+                                <span class="material-icons text-3xl text-slate-400">build</span>
+                                <span class="font-semibold">${utils.t('add_service')}</span>
+                            </button>
                         </div>
-                    </div>
-            `;
 
-            if (!activeCar) {
-                html += `
-                    <div class="px-6 pb-6">
-                        <button onclick="ui.openAddVehicle()" class="bg-white text-teal-600 px-6 py-2 rounded-full font-bold shadow-md hover:bg-teal-50 transition">${t('add_vehicle_plus')}</button>
-                    </div>
-                </div>`;
-                container.innerHTML = html;
-                return;
-            }
-
-            const stats = utils.calculateStats(activeCar.id, store.dashboardFilter);
-
-            html += `
-                </div>
-                
-                <div class="flex justify-center gap-2 mb-4 px-6 -mt-14 relative z-10">
-                    <button onclick="ui.setDashFilter('month')" class="px-4 py-1.5 rounded-full text-xs font-bold transition shadow-sm ${store.dashboardFilter === 'month' ? 'bg-white text-teal-600' : 'bg-white/30 text-white backdrop-blur-md hover:bg-white/40'}">${t('range_month')}</button>
-                    <button onclick="ui.setDashFilter('year')" class="px-4 py-1.5 rounded-full text-xs font-bold transition shadow-sm ${store.dashboardFilter === 'year' ? 'bg-white text-teal-600' : 'bg-white/30 text-white backdrop-blur-md hover:bg-white/40'}">${t('range_year')}</button>
-                    <button onclick="ui.setDashFilter('all')" class="px-4 py-1.5 rounded-full text-xs font-bold transition shadow-sm ${store.dashboardFilter === 'all' ? 'bg-white text-teal-600' : 'bg-white/30 text-white backdrop-blur-md hover:bg-white/40'}">${t('range_all')}</button>
-                </div>
-
-                ${this.renderReminders(activeCar)}
-
-                <div class="grid grid-cols-2 gap-3 px-4 mb-8">
-                    <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('efficiency')}</p>
-                        <p class="text-xl font-bold text-teal-600 mt-1">${stats.efficiency}</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('cost_km')}</p>
-                        <p class="text-xl font-bold text-blue-500 mt-1">${stats.costPerKm}</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('total_spent')}</p>
-                        <p class="text-xl font-bold text-slate-800 mt-1">${utils.formatCurrency(stats.totalCost)}</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl card-shadow flex flex-col items-center text-center">
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${t('total_dist')}</p>
-                        <p class="text-xl font-bold text-slate-800 mt-1">${utils.formatDist(stats.totalDist)}</p>
-                    </div>
-                </div>
-
-                <div class="px-6 mb-8">
-                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">${t('quick_actions')}</h3>
-                    <div class="flex gap-4">
-                        <button onclick="ui.openAddFuel()" class="flex-1 bg-teal-500 text-white py-4 rounded-2xl shadow-lg shadow-teal-500/30 flex flex-col items-center gap-2 active:scale-95 transition">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"></path></svg>
-                            <span class="font-bold text-sm">${t('log_fuel')}</span>
-                        </button>
-                        <button onclick="ui.openAddService()" class="flex-1 bg-white text-slate-700 border border-slate-100 py-4 rounded-2xl shadow-sm flex flex-col items-center gap-2 active:scale-95 transition">
-                            <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <span class="font-bold text-sm">${t('log_service')}</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="px-6 pb-6">
-                     <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">${t('recent_activity')}</h3>
-                     ${this.renderRecentList(activeCar.id)}
-                </div>
-            `;
-            container.innerHTML = html;
-        },
-
-        exportToCalendar() {
-            const car = store.getActiveVehicle();
-            if (!car) return;
-            
-            const lic = store.getLatestLog(car.id, 'license');
-            const ins = store.getLatestLog(car.id, 'insurance');
-            const reg = store.getLatestLog(car.id, 'registration');
-            
-            let events = [];
-            const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-            
-            const addEvent = (log, summary) => {
-                if (log && log.expiryDate) {
-                    const dateStr = log.expiryDate.replace(/-/g, ''); // YYYYMMDD
-                    events.push(`BEGIN:VEVENT
-UID:${log.id}@fuelmate
-DTSTAMP:${now}
-DTSTART;VALUE=DATE:${dateStr}
-SUMMARY:${summary} (${car.make} ${car.model})
-DESCRIPTION:Renewal Cost: ${utils.formatCurrency(log.cost)}
-END:VEVENT`);
-                }
-            };
-
-            addEvent(lic, t('type_license'));
-            addEvent(ins, t('type_insurance'));
-            addEvent(reg, t('type_registration'));
-
-            if (events.length === 0) {
-                alert(t('no_reminders'));
-                return;
-            }
-
-            const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//FuelMate//Car Tracker//EN
-${events.join('\n')}
-END:VCALENDAR`;
-
-            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.setAttribute('download', 'vehicle_reminders.ics');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            alert(t('calendar_added'));
-        },
-
-        renderReminders(car) {
-            // The Logic: getLatestLog already sorts by Date DESC.
-            const licLog = store.getLatestLog(car.id, 'license');
-            const insLog = store.getLatestLog(car.id, 'insurance');
-            const regLog = store.getLatestLog(car.id, 'registration');
-
-            const licDays = licLog ? utils.getDaysLeft(licLog.expiryDate) : null;
-            const insDays = insLog ? utils.getDaysLeft(insLog.expiryDate) : null;
-            const regDays = regLog ? utils.getDaysLeft(regLog.expiryDate) : null;
-
-            if (licDays === null && insDays === null && regDays === null) return '';
-
-            const items = [];
-            if (licDays !== null) items.push({ type: t('license_exp'), days: licDays, cost: licLog.cost, icon: '📄' });
-            if (insDays !== null) items.push({ type: t('insurance_exp'), days: insDays, cost: insLog.cost, icon: '🛡️' });
-            if (regDays !== null) items.push({ type: t('registration_exp'), days: regDays, cost: regLog.cost, icon: '📋' });
-            
-            items.sort((a, b) => a.days - b.days);
-
-            let html = `<div class="px-6 mb-6"><div class="bg-white rounded-2xl card-shadow overflow-hidden">
-                <div class="bg-slate-50 px-4 py-2 border-b border-slate-100 flex justify-between items-center">
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                        ${t('reminders')}
-                    </h3>
-                </div>
-                <div class="p-2">`;
-
-            items.forEach(item => {
-                let bgClass, textClass, statusText;
-                if (item.days < 0) { bgClass = 'bg-red-50 border-red-100'; textClass = 'text-red-600'; statusText = t('expired'); }
-                else if (item.days <= 15) { bgClass = 'bg-red-50 border-red-100'; textClass = 'text-red-600'; statusText = `${item.days} ${t('days_left')}`; }
-                else if (item.days <= 30) { bgClass = 'bg-yellow-50 border-yellow-100'; textClass = 'text-yellow-600'; statusText = `${item.days} ${t('days_left')}`; }
-                else { bgClass = 'bg-emerald-50 border-emerald-100'; textClass = 'text-emerald-600'; statusText = `${item.days} ${t('days_left')}`; }
-
-                html += `
-                    <div class="${bgClass} border rounded-xl p-3 mb-2 last:mb-0 flex items-center justify-between transition">
-                        <div class="flex items-center gap-3">
-                            <div class="text-xl">${item.icon}</div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-700">${item.type}</p>
-                                <p class="text-[10px] text-slate-500">${utils.formatCurrency(item.cost)}</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs font-bold ${textClass} px-2 py-1 rounded-md bg-white/60">
-                                ${statusText}
-                            </span>
+                        <!-- Recent Activity -->
+                        <div class="mt-6">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">${utils.t('recent_activity')}</h3>
+                            ${recentLogs.length === 0 ? `<p class="text-center text-slate-400 text-sm py-4 italic">${utils.t('no_records')}</p>` : 
+                                `<div class="space-y-3">
+                                    ${recentLogs.map(log => this.renderLogCard(log)).join('')}
+                                </div>`
+                            }
                         </div>
                     </div>
                 `;
-            });
-            html += `</div></div></div>`;
-            return html;
-        },
+            },
 
-        renderRecentList(vid) {
-            const logs = store.getLogs(vid).slice(0, 3);
-            if (logs.length === 0) return `<p class="text-slate-400 text-sm italic">${t('no_logs')}</p>`;
-            
-            return logs.map(log => {
-                let icon = '', color = '', typeLabel = '', editFn = '';
-                if(log.type === 'fuel') { icon = '⛽️'; color='bg-teal-50 text-teal-600'; typeLabel = t('fuel'); editFn = `ui.openAddFuel('${log.id}')`; }
-                else if(log.type === 'service') { icon = '🔧'; color='bg-orange-50 text-orange-600'; typeLabel = t('type_maint'); editFn = `ui.openAddService('${log.id}')`; }
-                else if(log.type === 'parking') { icon = '🅿️'; color='bg-blue-50 text-blue-600'; typeLabel = t('type_parking'); editFn = `ui.openAddService('${log.id}')`; }
-                else if(log.type === 'license') { icon = '📄'; color='bg-purple-50 text-purple-600'; typeLabel = t('type_license'); editFn = `ui.openAddService('${log.id}')`; }
-                else if(log.type === 'insurance') { icon = '🛡️'; color='bg-indigo-50 text-indigo-600'; typeLabel = t('type_insurance'); editFn = `ui.openAddService('${log.id}')`; }
-                else if(log.type === 'registration') { icon = '📋'; color='bg-pink-50 text-pink-600'; typeLabel = t('type_registration'); editFn = `ui.openAddService('${log.id}')`; }
+            renderStatsGrid(range, category) {
+                const s = utils.calculateStats(range, category);
+                const units = store.data.settings.units;
+                
+                return `
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl card-shadow">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">${utils.t(category === 'all' || category === 'fuel' ? 'efficiency' : 'cost')}</div>
+                            <div class="text-xl font-bold text-slate-700 truncate">
+                                ${category === 'all' || category === 'fuel' 
+                                    ? (s.efficiency > 0 ? (units === 'metric' ? s.efficiency.toFixed(1) : (235.215/s.efficiency).toFixed(1)) : '--') 
+                                    : utils.formatCurrency(s.totalCost)}
+                            </div>
+                            <div class="text-[10px] text-slate-400">${category === 'all' || category === 'fuel' ? (units === 'metric' ? 'L/100km' : 'MPG') : ''}</div>
+                        </div>
+                        <div class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl card-shadow">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">${utils.t('cost_km')}</div>
+                            <div class="text-xl font-bold text-slate-700 truncate">
+                                ${s.costPerKm > 0 ? utils.formatCurrency(s.costPerKm) : '--'}
+                            </div>
+                            <div class="text-[10px] text-slate-400">/${units === 'metric' ? 'km' : 'mi'}</div>
+                        </div>
+                        <div class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl card-shadow">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">${utils.t('total_cost')}</div>
+                            <div class="text-xl font-bold text-slate-700 truncate">${utils.formatCurrency(s.totalCost)}</div>
+                        </div>
+                         <div class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl card-shadow">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">${utils.t('total_distance')}</div>
+                            <div class="text-xl font-bold text-slate-700 truncate">${s.totalDist.toLocaleString()}</div>
+                             <div class="text-[10px] text-slate-400">${units === 'metric' ? 'km' : 'mi'}</div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderFuel(container, vehicle) {
+                this.renderListPage(container, vehicle, 'fuel', 'local_gas_station', 'bg-teal-500', utils.t('t_fuel'));
+            },
+
+            renderMaintenance(container, vehicle) {
+                 this.renderListPage(container, vehicle, 'maintenance', 'build', 'bg-indigo-500', utils.t('maintenance'));
+            },
+
+            renderParking(container, vehicle) {
+                this.renderListPage(container, vehicle, 'parking', 'local_parking', 'bg-blue-500', utils.t('t_parking'));
+            },
+
+            renderListPage(container, vehicle, type, icon, bgClass, title) {
+                const range = store.pageFilters[type];
+                const allLogs = store.getVehicleLogs(type);
+                const filteredLogs = utils.filterLogs(allLogs, range);
+                
+                // Render Header Stats specific to this page
+                let statsHtml = '';
+                if (type === 'fuel') {
+                    statsHtml = this.renderStatsGrid(range, 'fuel');
+                } else {
+                     // Simplified stats for parking/maintenance
+                     const s = utils.calculateStats(range, type);
+                     statsHtml = `
+                        <div class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl card-shadow mb-4 flex justify-between items-center">
+                             <div>
+                                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">${utils.t(type === 'parking' ? 'parking_cost' : 'service_cost')}</div>
+                                <div class="text-2xl font-bold text-slate-700">${utils.formatCurrency(s.totalCost)}</div>
+                             </div>
+                             <div class="h-10 w-10 rounded-full ${bgClass} bg-opacity-20 flex items-center justify-center">
+                                <span class="material-icons text-${bgClass.replace('bg-', '')} text-xl">${icon}</span>
+                             </div>
+                        </div>
+                     `;
+                }
+
+                container.innerHTML = `
+                    <div class="sticky-header px-4 pb-4 shadow-sm flex justify-between items-center">
+                         <div class="flex items-center gap-3">
+                             <span class="material-icons text-3xl text-slate-700">${icon}</span>
+                             <h1 class="text-2xl font-bold text-slate-800">${title}</h1>
+                         </div>
+                         <div class="bg-slate-200 p-1 rounded-full flex text-[10px] font-bold">
+                             ${['month', 'year', 'all'].map(r => `
+                                <button onclick="store.pageFilters['${type}']='${r}';ui.render()" 
+                                    class="${range===r ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'} px-3 py-1 rounded-full transition-all uppercase">
+                                    ${utils.t(r === 'month' ? 'this_month' : (r === 'year' ? 'this_year' : 'all_time'))}
+                                </button>
+                             `).join('')}
+                         </div>
+                    </div>
+                    
+                    <div class="px-4 py-4 pb-24">
+                        ${statsHtml}
+                        <div class="space-y-3 mt-4">
+                            ${filteredLogs.length === 0 ? `<p class="text-center text-slate-400 mt-10 italic">${utils.t('no_records')}</p>` : 
+                                filteredLogs.map(log => this.renderLogCard(log)).join('')}
+                        </div>
+                    </div>
+                    
+                    <button onclick="${type==='fuel'?'ui.openAddFuel()':'ui.openAddService(null, \''+type+'\')'}" class="fixed bottom-24 right-6 w-14 h-14 ${bgClass} rounded-full text-white shadow-xl flex items-center justify-center hover:scale-105 transition fab-shadow">
+                        <span class="material-icons text-3xl">add</span>
+                    </button>
+                `;
+            },
+
+            renderLogCard(log) {
+                const isFuel = log.type === 'fuel';
+                const icon = log.type === 'fuel' ? 'local_gas_station' : (log.type === 'parking' ? 'local_parking' : 'build');
+                const color = log.type === 'fuel' ? 'text-teal-600 bg-teal-50' : (log.type === 'parking' ? 'text-blue-600 bg-blue-50' : 'text-indigo-600 bg-indigo-50');
+                
+                // Calculations for fuel log
+                let fuelStats = '';
+                if (isFuel) {
+                    // Find previous log to calc efficiency
+                    const logs = store.getVehicleLogs('fuel');
+                    const idx = logs.findIndex(l => l.id === log.id);
+                    if (idx !== -1 && idx < logs.length - 1) {
+                        const prev = logs[idx+1]; // Logs are sorted desc
+                        const dist = log.odometer - prev.odometer;
+                        const l100 = (log.liters / dist) * 100;
+                        const ckm = log.cost / dist;
+                        const units = store.data.settings.units;
+                        
+                        fuelStats = `
+                            <div class="mt-3 pt-3 border-t border-slate-100 flex justify-around text-center">
+                                <div>
+                                    <div class="text-[10px] text-slate-400 uppercase">L/100km</div>
+                                    <div class="text-sm font-bold text-teal-600">${l100.toFixed(1)}</div>
+                                </div>
+                                ${units === 'imperial' ? `
+                                <div>
+                                    <div class="text-[10px] text-slate-400 uppercase">MPG</div>
+                                    <div class="text-sm font-bold text-teal-600">${(235.215/l100).toFixed(1)}</div>
+                                </div>` : ''}
+                                <div>
+                                    <div class="text-[10px] text-slate-400 uppercase">$/km</div>
+                                    <div class="text-sm font-bold text-teal-600">${ckm.toFixed(2)}</div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-slate-400 uppercase">+km</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">+${dist}</div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                         fuelStats = `<div class="mt-2 text-center text-xs text-slate-300 italic">${utils.t('no_records')}</div>`;
+                    }
+                }
+
+                let title = isFuel ? utils.t('add_fuel') : (log.type === 'parking' ? utils.t('t_parking') : (log.notes || utils.t('add_service')));
+                // Override title for license/insurance types
+                if (['license', 'insurance', 'registration'].includes(log.type)) {
+                    title = utils.t(log.type === 'license' ? 'license_renewal' : (log.type === 'insurance' ? 'insurance_renewal' : 'registration'));
+                }
 
                 return `
-                <div class="bg-white p-4 rounded-xl border border-slate-100 mb-3 flex items-center justify-between shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full ${color} flex items-center justify-center text-lg">${icon}</div>
-                        <div>
-                            <p class="font-bold text-slate-800 capitalize">${typeLabel}</p>
-                            <p class="text-xs text-slate-400">${new Date(log.date).toLocaleDateString()} • ${utils.formatDist(log.odometer)}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <p class="font-bold text-slate-800">${utils.formatCurrency(log.cost)}</p>
-                        <button onclick="${editFn}" class="text-slate-300 hover:text-teal-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                    <div class="bg-white p-4 rounded-2xl card-shadow relative group">
+                        <button onclick="ui.openAddService('${log.id}')" class="absolute top-4 right-4 text-slate-300 hover:text-sky-500 transition">
+                             <span class="material-icons text-lg">edit</span>
                         </button>
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-full ${color} flex items-center justify-center shrink-0">
+                                <span class="material-icons text-lg">${icon}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start pr-8">
+                                    <h4 class="font-bold text-slate-700 truncate">${title}</h4>
+                                    <span class="font-bold text-slate-800 text-lg">${utils.formatCurrency(log.cost)}</span>
+                                </div>
+                                <div class="text-xs text-slate-400 mb-1">${utils.formatDate(log.date)} • ${parseInt(log.odometer).toLocaleString()} km</div>
+                                ${log.pricePerUnit ? `<div class="text-xs text-slate-400">${log.liters}L @ ${log.pricePerUnit}/L</div>` : ''}
+                                ${log.location ? `<div class="text-xs text-slate-500 flex items-center gap-1 mt-1"><span class="material-icons text-[10px]">place</span> ${log.location}</div>` : ''}
+                                ${log.expiryDate ? `<div class="text-xs text-orange-500 font-bold mt-1">${utils.t('new_expiry')}: ${log.expiryDate}</div>` : ''}
+                            </div>
+                        </div>
+                        ${fuelStats}
                     </div>
-                </div>
                 `;
-            }).join('');
-        },
+            },
 
-        renderFuel(container) {
-            const activeCar = store.getActiveVehicle();
-            if(!activeCar) return this.renderNoCar(container);
-            
-            const currentFilter = store.pageFilters.fuel;
-            const allLogs = store.getLogs(activeCar.id, 'fuel').sort((a, b) => b.odometer - a.odometer);
-            const logs = utils.filterLogsByRange(allLogs, currentFilter);
-            
-            const unitVol = store.data.settings.unitSystem === 'metric' ? 'L' : 'Gal';
-            const unitDist = store.data.settings.unitSystem === 'metric' ? 'km' : 'mi';
-            const currency = store.data.settings.currency;
-            const isMetric = store.data.settings.unitSystem === 'metric';
-            
-            // Page Specific Stats
-            // Re-using logic from calculateStats but specifically for Fuel Page context
-            let totalCost = logs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
-            let totalDist = 0;
-            let totalVol = logs.reduce((sum, l) => sum + parseFloat(l.liters), 0);
-            
-            // Estimate distance for the filtered logs
-            // If multiple logs, max odometer - min odometer
-            if (logs.length > 1) {
-                // logs are sorted DESC, so 0 is max, last is min
-                totalDist = logs[0].odometer - logs[logs.length - 1].odometer;
-            } else if (logs.length === 1) {
-                 // If only 1 log in range, we can try to find previous log in *allLogs* to get delta
-                 const idx = allLogs.findIndex(l => l.id === logs[0].id);
-                 if (idx < allLogs.length - 1) {
-                     totalDist = allLogs[idx].odometer - allLogs[idx+1].odometer;
-                 }
-            }
-
-            let efficiency = '--';
-            let costPerKm = '--';
-            
-            if (totalDist > 0 && totalVol > 0) {
-                 if (isMetric) {
-                    const l100 = (totalVol / totalDist) * 100;
-                    efficiency = `${l100.toFixed(1)} L/100km`;
-                    costPerKm = `${currency}${(totalCost / totalDist).toFixed(2)}/km`;
-                } else {
-                    const mpg = totalDist / totalVol; 
-                    efficiency = `${mpg.toFixed(1)} MPG`;
-                    costPerKm = `${currency}${(totalCost / totalDist).toFixed(2)}/mi`;
-                }
-            }
-
-            container.innerHTML = `
-                <div class="pt-[max(20px,env(safe-area-inset-top))] bg-white border-b border-slate-100 sticky top-0 z-40 pb-2">
-                    <div class="px-6 flex justify-between items-center mb-3">
-                        <h1 class="text-3xl font-bold text-slate-800">${t('title_fuel')}</h1>
-                        <button onclick="ui.openAddFuel()" class="bg-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md">+</button>
-                    </div>
-                    <div class="px-6 flex gap-2">
-                        <button onclick="ui.setPageFilter('fuel', 'month')" class="px-3 py-1 rounded-full text-xs font-bold transition ${currentFilter === 'month' ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-500'}">${t('range_month')}</button>
-                        <button onclick="ui.setPageFilter('fuel', 'year')" class="px-3 py-1 rounded-full text-xs font-bold transition ${currentFilter === 'year' ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-500'}">${t('range_year')}</button>
-                        <button onclick="ui.setPageFilter('fuel', 'all')" class="px-3 py-1 rounded-full text-xs font-bold transition ${currentFilter === 'all' ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-500'}">${t('range_all')}</button>
-                    </div>
-                </div>
+            renderAnalytics(container, vehicle) {
+                const s = utils.calculateStats('year', 'all'); // Year overview
                 
-                <div class="p-4 space-y-3">
-                     <div class="grid grid-cols-2 gap-2 mb-4">
-                        <div class="bg-white p-3 rounded-xl border border-slate-100 text-center">
-                             <p class="text-[10px] text-slate-400 uppercase font-bold">${t('efficiency')}</p>
-                             <p class="text-lg font-bold text-teal-600">${efficiency}</p>
-                        </div>
-                        <div class="bg-white p-3 rounded-xl border border-slate-100 text-center">
-                             <p class="text-[10px] text-slate-400 uppercase font-bold">${t('cost_km')}</p>
-                             <p class="text-lg font-bold text-blue-500">${costPerKm}</p>
-                        </div>
-                        <div class="bg-white p-3 rounded-xl border border-slate-100 text-center">
-                             <p class="text-[10px] text-slate-400 uppercase font-bold">${t('total_spent')}</p>
-                             <p class="text-lg font-bold text-slate-800">${utils.formatCurrency(totalCost)}</p>
-                        </div>
-                        <div class="bg-white p-3 rounded-xl border border-slate-100 text-center">
-                             <p class="text-[10px] text-slate-400 uppercase font-bold">${t('total_dist')}</p>
-                             <p class="text-lg font-bold text-slate-800">${utils.formatDist(totalDist)}</p>
-                        </div>
-                    </div>
+                // Calc Fixed Costs
+                const fixedLogs = store.getVehicleLogs().filter(l => ['license', 'insurance', 'registration'].includes(l.type));
+                const fixedCost = fixedLogs.reduce((sum, l) => sum + parseFloat(l.cost || 0), 0); // Total All time? Or year? Let's do year for chart
+                // Filter fixed for year
+                const now = new Date();
+                const yearlyFixed = fixedLogs.filter(l => new Date(l.date).getFullYear() === now.getFullYear()).reduce((s,l)=>s+parseFloat(l.cost),0);
 
-                    ${logs.length ? logs.map((log, index) => {
-                        const unitPrice = log.liters > 0 ? (log.cost / log.liters).toFixed(2) : '0.00';
-                        let statsHtml = `<div class="text-xs text-slate-400 italic text-center py-2">${t('waiting_data')}</div>`;
+                // Render Charts
+                // Pie Data: Fuel vs Maintenance vs Parking vs Fixed
+                const fuelCost = utils.calculateStats('year', 'fuel').totalCost;
+                const parkingCost = utils.calculateStats('year', 'parking').totalCost;
+                const maintCost = utils.calculateStats('year', 'maintenance').totalCost - yearlyFixed; // Pure maintenance
+
+                const total = fuelCost + parkingCost + maintCost + yearlyFixed;
+                const pFuel = total ? (fuelCost/total)*100 : 0;
+                const pPark = total ? (parkingCost/total)*100 : 0;
+                const pMaint = total ? (maintCost/total)*100 : 0;
+                const pFixed = total ? (yearlyFixed/total)*100 : 0;
+
+                // SVG Pie Chart
+                const createSlice = (percent, color, offset) => {
+                    if(percent === 0) return '';
+                    const x = Math.cos(2 * Math.PI * offset);
+                    const y = Math.sin(2 * Math.PI * offset);
+                    const endX = Math.cos(2 * Math.PI * (offset + percent/100));
+                    const endY = Math.sin(2 * Math.PI * (offset + percent/100));
+                    const largeArc = percent > 50 ? 1 : 0;
+                    return `<path d="M 0 0 L ${x} ${y} A 1 1 0 ${largeArc} 1 ${endX} ${endY} Z" fill="${color}"/>`;
+                };
+                
+                let offset = 0;
+                const sliceFuel = createSlice(pFuel, '#14b8a6', offset); offset += pFuel/100;
+                const slicePark = createSlice(pPark, '#3b82f6', offset); offset += pPark/100;
+                const sliceMaint = createSlice(pMaint, '#6366f1', offset); offset += pMaint/100;
+                const sliceFixed = createSlice(pFixed, '#f59e0b', offset);
+
+                container.innerHTML = `
+                    <div class="sticky-header px-4 pb-4 shadow-sm">
+                        <h1 class="text-2xl font-bold text-slate-800 pt-4">${utils.t('t_analytics')}</h1>
+                    </div>
+                    <div class="p-4 pb-24 space-y-6">
                         
-                        // Find this log in the FULL filtered array to get next
-                        // actually, logs IS the filtered array.
-                        // To perform accurate DELTA for specific card, we need the previous log regardless of filter?
-                        // The prompt asked for "auto-calculate... if filter is year, only show year logs".
-                        // But individual card calculation needs previous odometer.
-                        // We should look up in allLogs (sorted DESC) to find next index.
-                        const realIdx = allLogs.findIndex(l => l.id === log.id);
-
-                        if (realIdx < allLogs.length - 1) {
-                            const prevLog = allLogs[realIdx + 1];
-                            const dist = log.odometer - prevLog.odometer;
-                            const vol = parseFloat(log.liters);
-                            const cost = parseFloat(log.cost);
-                            if (dist > 0 && vol > 0) {
-                                let metrics = [];
-                                const l100 = (vol / dist) * 100;
-                                const kmL = dist / vol;
-                                const costPerDist = cost / dist;
-                                if (isMetric) {
-                                    metrics.push({ label: 'L/100km', val: l100.toFixed(1) });
-                                    metrics.push({ label: `${currency}/${unitDist}`, val: costPerDist.toFixed(2) });
-                                } else {
-                                    const mpg = kmL * 2.35215;
-                                    metrics.push({ label: 'MPG', val: mpg.toFixed(1) });
-                                    metrics.push({ label: 'km/L', val: kmL.toFixed(1) });
-                                    metrics.push({ label: `${currency}/${unitDist}`, val: costPerDist.toFixed(2) });
-                                }
-                                statsHtml = `
-                                    <div class="grid grid-cols-${metrics.length} gap-2 mt-3 pt-3 border-t border-slate-100">
-                                        ${metrics.map(m => `<div class="text-center"><div class="text-[10px] text-slate-400 uppercase font-bold">${m.label}</div><div class="text-sm font-bold text-teal-600">${m.val}</div></div>`).join('')}
-                                    </div>
-                                    <div class="text-[10px] text-slate-300 text-center mt-1">+${dist} ${unitDist} ${t('prev_dist')}</div>
-                                `;
-                            }
-                        }
-                        return `
-                        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col gap-1 relative overflow-hidden">
-                            <div class="flex justify-between items-start">
-                                <span class="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-md">${new Date(log.date).toLocaleDateString()}</span>
+                        <!-- Pie Chart -->
+                        <div class="bg-white p-6 rounded-3xl card-shadow text-center">
+                            <h3 class="text-sm font-bold text-slate-400 uppercase mb-6">${utils.t('total_cost')} (${new Date().getFullYear()})</h3>
+                            <div class="w-48 h-48 mx-auto relative">
+                                <svg viewBox="-1 -1 2 2" class="transform -rotate-90 w-full h-full overflow-visible">
+                                    ${total === 0 ? '<circle cx="0" cy="0" r="1" fill="#f1f5f9"/>' : 
+                                    sliceFuel + slicePark + sliceMaint + sliceFixed}
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
+                                    <span class="text-2xl font-bold text-slate-700">${utils.formatCurrency(total)}</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mt-8 text-left">
                                 <div class="flex items-center gap-2">
-                                    <span class="font-bold text-lg text-slate-800">${utils.formatCurrency(log.cost)}</span>
-                                    <button onclick="ui.openAddFuel('${log.id}')" class="text-slate-300 hover:text-teal-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg></button>
+                                    <div class="w-3 h-3 rounded-full bg-teal-500"></div>
+                                    <div class="text-xs text-slate-500">Fuel (${Math.round(pFuel)}%)</div>
                                 </div>
-                            </div>
-                            <div class="flex justify-between items-center mt-1">
-                                <div class="text-xs text-slate-500">
-                                    <span class="font-bold text-slate-700">${utils.formatFuel(log.liters)}</span>
-                                    <span class="text-slate-400"> @ ${currency}${unitPrice}/${unitVol}</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                                    <div class="text-xs text-slate-500">Parking (${Math.round(pPark)}%)</div>
                                 </div>
-                                <div class="text-xs font-bold text-slate-500">${utils.formatDist(log.odometer)}</div>
-                            </div>
-                            ${log.location ? `<div class="text-[10px] text-slate-400 mt-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> ${log.location}</div>` : ''}
-                            ${statsHtml}
-                        </div>
-                    `}).join('') : `<div class="text-center py-10 text-slate-400">${t('no_logs')}</div>`}
-                </div>
-            `;
-        },
-
-        renderParking(container) {
-            const activeCar = store.getActiveVehicle();
-            if(!activeCar) return this.renderNoCar(container);
-            
-            const currentFilter = store.pageFilters.parking;
-            const allLogs = store.getLogs(activeCar.id, 'parking');
-            const logs = utils.filterLogsByRange(allLogs, currentFilter);
-            
-            const totalCost = logs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
-
-            container.innerHTML = `
-                <div class="pt-[max(20px,env(safe-area-inset-top))] bg-white border-b border-slate-100 sticky top-0 z-40 pb-2">
-                    <div class="px-6 flex justify-between items-center mb-3">
-                        <h1 class="text-3xl font-bold text-slate-800">${t('title_parking')}</h1>
-                        <button onclick="ui.openAddService(null, 'Parking')" class="bg-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md">+</button>
-                    </div>
-                    <div class="px-6 flex gap-2">
-                        <button onclick="ui.setPageFilter('parking', 'month')" class="px-3 py-1 rounded-full text-xs font-bold transition ${currentFilter === 'month' ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-500'}">${t('range_month')}</button>
-                        <button onclick="ui.setPageFilter('parking', 'year')" class="px-3 py-1 rounded-full text-xs font-bold transition ${currentFilter === 'year' ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-500'}">${t('range_year')}</button>
-                        <button onclick="ui.setPageFilter('parking', 'all')" class="px-3 py-1 rounded-full text-xs font-bold transition ${currentFilter === 'all' ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-500'}">${t('range_all')}</button>
-                    </div>
-                </div>
-                <div class="p-4 space-y-3">
-                     <div class="bg-white p-3 rounded-xl border border-slate-100 text-center mb-4">
-                         <p class="text-[10px] text-slate-400 uppercase font-bold">${t('total_spent')}</p>
-                         <p class="text-lg font-bold text-slate-800">${utils.formatCurrency(totalCost)}</p>
-                    </div>
-
-                    ${logs.length ? logs.map(log => {
-                        return `
-                        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative">
-                            <div class="flex gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-lg">🅿️</div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between">
-                                        <h4 class="font-bold text-slate-800 capitalize">${log.note || t('type_parking')}</h4>
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-bold text-slate-800">${utils.formatCurrency(log.cost)}</span>
-                                            <button onclick="ui.openAddService('${log.id}')" class="text-slate-300 hover:text-teal-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg></button>
-                                        </div>
-                                    </div>
-                                    <p class="text-xs text-slate-500 mt-1">${new Date(log.date).toLocaleDateString()} • ${log.location || t('location')}</p>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
+                                    <div class="text-xs text-slate-500">Service (${Math.round(pMaint)}%)</div>
+                                </div>
+                                 <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                                    <div class="text-xs text-slate-500">Fixed (${Math.round(pFixed)}%)</div>
                                 </div>
                             </div>
                         </div>
-                    `}).join('') : `<div class="text-center py-10 text-slate-400">${t('no_logs')}</div>`}
-                </div>
-            `;
-        },
 
-        renderMaintenance(container) {
-            const activeCar = store.getActiveVehicle();
-            if(!activeCar) return this.renderNoCar(container);
-            
-            const currentFilter = store.pageFilters.service;
-            // Exclude fuel and parking, then filter by range
-            const allLogs = store.getLogs(activeCar.id).filter(l => l.type !== 'fuel' && l.type !== 'parking');
-            const logs = utils.filterLogsByRange(allLogs, currentFilter);
-            
-            const totalCost = logs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
-
-            container.innerHTML = `
-                <div class="pt-[max(20px,env(safe-area-inset-top))] bg-white border-b border-slate-100 sticky top-0 z-40 pb-2">
-                     <div class="px-6 flex justify-between items-center mb-3">
-                        <h1 class="text-3xl font-bold text-slate-800">${t('title_service')}</h1>
-                        <button onclick="ui.openAddService()" class="bg-teal-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md">+</button>
-                    </div>
-                    <div class="px-6 flex gap-2">
-                        <button onclick="ui.setPageFilter('service', 'month')" class="px-3 py-1 rounded-full text-xs font-bold transition ${currentFilter === 'month' ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-500'}">${t('range_month')}</button>
-                        <button onclick="ui.setPageFilter('service', 'year')" class="px-3 py-1 rounded-full text-xs font-bold transition ${currentFilter === 'year' ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-500'}">${t('range_year')}</button>
-                        <button onclick="ui.setPageFilter('service', 'all')" class="px-3 py-1 rounded-full text-xs font-bold transition ${currentFilter === 'all' ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-500'}">${t('range_all')}</button>
-                    </div>
-                </div>
-                <div class="p-4 space-y-3">
-                     <div class="bg-white p-3 rounded-xl border border-slate-100 text-center mb-4">
-                         <p class="text-[10px] text-slate-400 uppercase font-bold">${t('total_spent')}</p>
-                         <p class="text-lg font-bold text-slate-800">${utils.formatCurrency(totalCost)}</p>
-                    </div>
-                    
-                    ${logs.length ? logs.map(log => {
-                        let icon = '🔧', colorClass = 'bg-orange-100 text-orange-600', title = t('type_maint');
-                        if(log.type === 'license') { icon = '📄'; colorClass = 'bg-purple-100 text-purple-600'; title = t('type_license'); }
-                        if(log.type === 'insurance') { icon = '🛡️'; colorClass = 'bg-indigo-100 text-indigo-600'; title = t('type_insurance'); }
-                        if(log.type === 'registration') { icon = '📋'; colorClass = 'bg-pink-100 text-pink-600'; title = t('type_registration'); }
-
-                        return `
-                        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative">
-                            <div class="flex gap-3">
-                                <div class="w-10 h-10 rounded-lg ${colorClass} flex items-center justify-center text-lg">
-                                    ${icon}
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between">
-                                        <h4 class="font-bold text-slate-800 capitalize">${log.note || title}</h4>
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-bold text-slate-800">${utils.formatCurrency(log.cost)}</span>
-                                            <button onclick="ui.openAddService('${log.id}')" class="text-slate-300 hover:text-teal-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg></button>
-                                        </div>
-                                    </div>
-                                    <p class="text-xs text-slate-500 mt-1">${new Date(log.date).toLocaleDateString()} • ${log.location || utils.formatDist(log.odometer)}</p>
-                                    ${log.expiryDate ? `<p class="text-xs text-teal-600 mt-1 font-medium">Expires: ${log.expiryDate}</p>` : ''}
-                                </div>
+                         <div class="bg-white p-6 rounded-3xl card-shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-sm font-bold text-slate-400 uppercase">${utils.t('fixed_costs')}</h3>
+                                <span class="text-amber-500 font-bold">${utils.formatCurrency(yearlyFixed)}</span>
                             </div>
-                        </div>
-                    `}).join('') : `<div class="text-center py-10 text-slate-400">${t('no_logs')}</div>`}
-                </div>
-            `;
-        },
+                             <div class="space-y-2">
+                                 ${fixedLogs.slice(0,3).map(l => `
+                                     <div class="flex justify-between text-sm py-2 border-b border-slate-50">
+                                         <span class="text-slate-600">${utils.t(l.type === 'license' ? 'license_renewal' : (l.type === 'insurance' ? 'insurance_renewal' : 'registration'))}</span>
+                                         <span>${utils.formatCurrency(l.cost)}</span>
+                                     </div>
+                                 `).join('')}
+                             </div>
+                         </div>
 
-        renderAnalytics(container) {
-             const activeCar = store.getActiveVehicle();
-             if(!activeCar) return this.renderNoCar(container);
-             
-             // Calc annual fixed costs (last 365 days)
-             const oneYearAgo = new Date();
-             oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-             
-             const logs = store.getLogs(activeCar.id);
-             const fixedLogs = logs.filter(l => 
-                (l.type === 'license' || l.type === 'insurance' || l.type === 'registration') && 
-                new Date(l.date) >= oneYearAgo
-             );
-             const fixedCost = fixedLogs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
+                    </div>
+                `;
+            },
 
-             container.innerHTML = `
-                 <div class="pt-[max(20px,env(safe-area-inset-top))] px-6 pb-4 bg-white sticky top-0 z-40">
-                     <h1 class="text-3xl font-bold text-slate-800">${t('title_analytics')}</h1>
-                 </div>
-                 <div class="p-4 space-y-6">
-                     <div class="bg-white p-4 rounded-2xl card-shadow flex justify-between items-center">
-                         <div><h3 class="text-sm font-bold text-slate-400 uppercase">${t('fixed_costs')}</h3><p class="text-[10px] text-slate-400 mt-1">(${t('last_30')})</p></div>
-                         <div class="text-2xl font-bold text-slate-800">${utils.formatCurrency(fixedCost)}</div>
-                     </div>
-                     <div class="bg-white p-4 rounded-2xl card-shadow">
-                         <h3 class="text-sm font-bold text-slate-400 uppercase mb-4">${t('expense_breakdown')}</h3>
-                         <div class="h-48 w-full"><canvas id="costChart"></canvas></div>
-                     </div>
-                     <div class="bg-white p-4 rounded-2xl card-shadow">
-                         <h3 class="text-sm font-bold text-slate-400 uppercase mb-4">${t('fuel_eff_trend')}</h3>
-                         <div class="h-48 w-full"><canvas id="effChart"></canvas></div>
-                     </div>
-                 </div>
-             `;
-             setTimeout(() => this.renderCharts(activeCar.id), 100);
-        },
-        
-        renderCharts(vid) {
-            const logs = store.getLogs(vid);
-            const fuelLogs = logs.filter(l => l.type === 'fuel').sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            const fuelCost = fuelLogs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
-            const serviceCost = logs.filter(l => l.type === 'service').reduce((sum, l) => sum + parseFloat(l.cost), 0);
-            const parkingCost = logs.filter(l => l.type === 'parking').reduce((sum, l) => sum + parseFloat(l.cost), 0);
-            const fixedCost = logs.filter(l => ['license','insurance','registration'].includes(l.type)).reduce((sum, l) => sum + parseFloat(l.cost), 0);
-
-            new Chart(document.getElementById('costChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: [t('fuel'), t('type_maint'), t('type_parking'), t('section_fixed')],
-                    datasets: [{ data: [fuelCost, serviceCost, parkingCost, fixedCost], backgroundColor: ['#0d9488', '#f97316', '#3b82f6', '#a855f7'], borderWidth: 0 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
-            });
-
-            const dataPoints = [];
-            const labels = [];
-            for (let i = 1; i < fuelLogs.length; i++) {
-                const dist = fuelLogs[i].odometer - fuelLogs[i-1].odometer;
-                const vol = parseFloat(fuelLogs[i].liters);
-                if(dist > 0 && vol > 0) {
-                    labels.push(new Date(fuelLogs[i].date).toLocaleDateString(undefined, {month:'short', day:'numeric'}));
-                    dataPoints.push((vol / dist) * 100);
-                }
-            }
-
-            new Chart(document.getElementById('effChart'), {
-                type: 'line',
-                data: { labels: labels, datasets: [{ label: 'L/100km', data: dataPoints, borderColor: '#0d9488', backgroundColor: 'rgba(13, 148, 136, 0.1)', fill: true, tension: 0.4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false } } }
-            });
-        },
-
-        renderSettings(container) {
-            const vehicles = store.data.vehicles;
-            container.innerHTML = `
-                <div class="pt-[calc(env(safe-area-inset-top)+20px)] px-6 pb-6 bg-gradient-to-br from-slate-800 to-slate-900 text-white sticky top-0 z-40">
-                    <h1 class="text-3xl font-bold">${t('title_settings')}</h1>
-                </div>
-                <div class="p-4 space-y-6">
-                    <section>
-                        <div class="flex justify-between items-center mb-2 px-2">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase">${t('vehicle_details')}</h3>
-                            <button onclick="ui.openAddVehicle()" class="text-primary text-xs font-bold">+ Add</button>
-                        </div>
-                        <div class="bg-white rounded-xl overflow-hidden shadow-sm">
-                            ${vehicles.map(v => `
-                                <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-                                    <div class="flex-1 cursor-pointer" onclick="ui.switchVehicle('${v.id}')">
-                                        <p class="font-bold text-slate-800">${v.year} ${v.make} ${v.model}</p>
-                                        <p class="text-xs text-slate-400">${utils.formatDist(v.currentOdometer)}</p>
-                                    </div>
+            renderSettings(container) {
+                const settings = store.data.settings;
+                container.innerHTML = `
+                    <div class="sticky-header px-4 pb-4 shadow-sm">
+                        <h1 class="text-2xl font-bold text-slate-800 pt-4">${utils.t('settings_title')}</h1>
+                    </div>
+                    <div class="p-4 pb-24 space-y-6">
+                        
+                        <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                            <div class="bg-slate-50 px-4 py-3 border-b border-slate-100 font-bold text-slate-500 text-xs uppercase">${utils.t('manage_vehicles')}</div>
+                            ${store.data.vehicles.map(v => `
+                                <div class="p-4 flex justify-between items-center border-b border-slate-100 last:border-0 cursor-pointer active:bg-slate-50" onclick="store.data.settings.activeVehicleId='${v.id}';store.save();ui.render()">
                                     <div class="flex items-center gap-3">
-                                        ${v.id === store.data.settings.activeVehicleId ? '<div class="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>' : '<div class="w-6 h-6 rounded-full border border-slate-200"></div>'}
-                                        <button onclick="ui.openAddVehicle('${v.id}')" class="text-slate-300 hover:text-teal-600 p-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg></button>
+                                        <div class="w-10 h-10 rounded-full ${v.id === settings.activeVehicleId ? 'bg-sky-500 text-white' : 'bg-slate-200 text-slate-500'} flex items-center justify-center">
+                                            <span class="material-icons">directions_car</span>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-slate-700">${v.model}</div>
+                                            <div class="text-xs text-slate-400">${v.year} ${v.make}</div>
+                                        </div>
                                     </div>
+                                    <button onclick="event.stopPropagation();ui.openAddVehicle('${v.id}')" class="text-slate-300 hover:text-sky-500 p-2">
+                                        <span class="material-icons">edit</span>
+                                    </button>
                                 </div>
                             `).join('')}
+                            <button onclick="ui.openAddVehicle()" class="w-full py-4 text-center text-sky-600 font-bold text-sm hover:bg-sky-50 transition">
+                                + ${utils.t('add_vehicle')}
+                            </button>
                         </div>
-                    </section>
-                    <section>
-                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-2 px-2">${t('preferences')}</h3>
-                        <div class="bg-white rounded-xl overflow-hidden shadow-sm">
-                            <div class="p-4 border-b border-slate-100 flex justify-between items-center">
-                                <span>${t('language')}</span>
-                                <select onchange="ui.updateSetting('language', this.value)" class="bg-slate-100 rounded-md px-2 py-1 text-sm outline-none text-right rtl">
-                                    <option value="en" ${store.data.settings.language === 'en' ? 'selected' : ''}>English</option>
-                                    <option value="zh" ${store.data.settings.language === 'zh' ? 'selected' : ''}>繁體中文</option>
+
+                        <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                            <div class="bg-slate-50 px-4 py-3 border-b border-slate-100 font-bold text-slate-500 text-xs uppercase">${utils.t('app_settings')}</div>
+                            
+                            <div class="p-4 flex justify-between items-center border-b border-slate-100">
+                                <span class="text-slate-700">${utils.t('units')}</span>
+                                <div class="flex bg-slate-100 rounded-lg p-1">
+                                    <button onclick="store.data.settings.units='metric';store.save();ui.render()" class="${settings.units==='metric'?'bg-white shadow-sm text-sky-600':'text-slate-400'} px-3 py-1 rounded text-xs font-bold transition">Metric</button>
+                                    <button onclick="store.data.settings.units='imperial';store.save();ui.render()" class="${settings.units==='imperial'?'bg-white shadow-sm text-sky-600':'text-slate-400'} px-3 py-1 rounded text-xs font-bold transition">Imperial</button>
+                                </div>
+                            </div>
+
+                             <div class="p-4 flex justify-between items-center border-b border-slate-100">
+                                <span class="text-slate-700">${utils.t('language')}</span>
+                                <select onchange="store.data.settings.language=this.value;store.save();ui.render()" class="bg-slate-100 rounded-lg px-3 py-1 text-sm font-bold text-slate-600 outline-none">
+                                    <option value="en" ${settings.language==='en'?'selected':''}>English</option>
+                                    <option value="zh" ${settings.language==='zh'?'selected':''}>繁體中文</option>
                                 </select>
                             </div>
-                             <div class="p-4 border-b border-slate-100 flex justify-between items-center">
-                                <span>${t('currency')}</span>
-                                <select onchange="ui.updateSetting('currency', this.value)" class="bg-slate-100 rounded-md px-2 py-1 text-sm outline-none">
-                                    <option value="$" ${store.data.settings.currency === '$' ? 'selected' : ''}>USD ($)</option>
-                                    <option value="€" ${store.data.settings.currency === '€' ? 'selected' : ''}>EUR (€)</option>
-                                    <option value="£" ${store.data.settings.currency === '£' ? 'selected' : ''}>GBP (£)</option>
-                                    <option value="¥" ${store.data.settings.currency === '¥' ? 'selected' : ''}>JPY (¥)</option>
-                                    <option value="HK$" ${store.data.settings.currency === 'HK$' ? 'selected' : ''}>HKD (HK$)</option>
-                                    <option value="A$" ${store.data.settings.currency === 'A$' ? 'selected' : ''}>AUD (A$)</option>
-                                </select>
-                            </div>
+
                             <div class="p-4 flex justify-between items-center">
-                                <span>${t('units')}</span>
-                                <select onchange="ui.updateSetting('unitSystem', this.value)" class="bg-slate-100 rounded-md px-2 py-1 text-sm outline-none">
-                                    <option value="metric" ${store.data.settings.unitSystem === 'metric' ? 'selected' : ''}>${t('unit_metric')}</option>
-                                    <option value="imperial" ${store.data.settings.unitSystem === 'imperial' ? 'selected' : ''}>${t('unit_imperial')}</option>
+                                <span class="text-slate-700">${utils.t('currency')}</span>
+                                <select onchange="store.data.settings.currency=this.value;store.save();ui.render()" class="bg-slate-100 rounded-lg px-3 py-1 text-sm font-bold text-slate-600 outline-none">
+                                    <option value="$" ${settings.currency==='$'?'selected':''}>$ (USD)</option>
+                                    <option value="€" ${settings.currency==='€'?'selected':''}>€ (EUR)</option>
+                                    <option value="£" ${settings.currency==='£'?'selected':''}>£ (GBP)</option>
+                                    <option value="¥" ${settings.currency==='¥'?'selected':''}>¥ (JPY)</option>
+                                    <option value="HK$" ${settings.currency==='HK$'?'selected':''}>HK$ (HKD)</option>
+                                    <option value="A$" ${settings.currency==='A$'?'selected':''}>A$ (AUD)</option>
                                 </select>
                             </div>
                         </div>
-                    </section>
-                    <section>
-                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-2 px-2">${t('data')}</h3>
-                        <div class="bg-white rounded-xl overflow-hidden shadow-sm">
-                            <button onclick="store.exportData()" class="w-full p-4 text-left text-primary font-medium active:bg-slate-50">${t('export_json')}</button>
-                            <div class="border-t border-slate-50">
-                                <input type="file" id="import-file" class="hidden" accept=".json" onchange="ui.handleImport(this)">
-                                <button onclick="document.getElementById('import-file').click()" class="w-full p-4 text-left text-primary font-medium active:bg-slate-50">${t('import_json')}</button>
-                            </div>
-                        </div>
-                    </section>
-                    <div class="text-center text-xs text-slate-300 mt-8">FuelMate v1.4.0<br>Offline PWA</div>
-                </div>
-            `;
-        },
 
-        handleImport(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (store.importData(e.target.result)) { alert(t('import_success')); router.navigate('dashboard'); }
-                else { alert(t('import_error')); }
-            };
-            reader.readAsText(file);
-            input.value = '';
-        },
-
-        renderNoCar(container) {
-            container.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full p-8 text-center mt-20">
-                    <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6 text-4xl">🚗</div>
-                    <h2 class="text-2xl font-bold text-slate-800 mb-2">${t('no_vehicle')}</h2>
-                    <p class="text-slate-500 mb-6">${t('no_vehicle_desc')}</p>
-                    <button onclick="ui.openAddVehicle()" class="bg-teal-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-teal-500/30">${t('add_vehicle')}</button>
-                </div>
-            `;
-        },
-
-        closeModal() { document.getElementById('modal-container').classList.add('hidden'); },
-
-        openAddVehicle(id = null) {
-            const content = document.getElementById('modal-content');
-            let vehicle = { make: '', model: '', year: '', currentOdometer: '' };
-            let title = t('add_vehicle'), btnText = t('save_vehicle'), hiddenId = '';
-            let clearBtn = '';
-
-            if (id) {
-                vehicle = store.getVehicle(id) || vehicle;
-                title = t('edit_vehicle'); btnText = t('save_changes'); hiddenId = `<input type="hidden" name="id" value="${id}">`;
-                clearBtn = `
-                    <div class="mt-8 pt-6 border-t border-slate-100">
-                        <button type="button" onclick="ui.clearVehicleData('${id}')" class="w-full bg-red-50 text-red-500 font-bold py-3 rounded-xl border border-red-100 flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            ${t('clear_history')}
-                        </button>
-                    </div>`;
-            }
-
-            content.innerHTML = `
-                <h2 class="text-xl font-bold mb-6">${title}</h2>
-                <form onsubmit="ui.submitVehicle(event)" class="space-y-4">
-                    ${hiddenId}
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('make')}</label><input type="text" name="make" required value="${vehicle.make}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('vehicle_placeholder_make')}"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('model')}</label><input type="text" name="model" required value="${vehicle.model}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('vehicle_placeholder_model')}"></div>
-                    <div class="grid grid-cols-2 gap-4">
-                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('year')}</label><input type="number" name="year" required value="${vehicle.year}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="2023"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('odometer')}</label><input type="number" name="odometer" required value="${vehicle.currentOdometer}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0"></div>
-                    </div>
-                    <div class="flex gap-3 mt-6">
-                        <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
-                        <button type="submit" class="flex-[2] bg-teal-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/30">${btnText}</button>
-                    </div>
-                </form>
-                ${clearBtn}
-            `;
-            document.getElementById('modal-container').classList.remove('hidden');
-        },
-
-        clearVehicleData(id) {
-            // Use setTimeout to prevent iOS UI thread blocking on click events
-            setTimeout(() => {
-                if (window.confirm(t('clear_warn_1'))) {
-                    setTimeout(() => {
-                        if (window.confirm(t('clear_warn_2'))) {
-                            store.clearVehicleLogs(id);
-                            window.alert(t('history_cleared'));
-                            ui.closeModal();
-                            router.navigate('dashboard');
-                        }
-                    }, 50);
-                }
-            }, 50);
-        },
-
-        async fetchLocationName(fieldName) {
-            const input = document.getElementsByName(fieldName)[0];
-            const originalPlaceholder = input.placeholder;
-            input.value = '';
-            input.placeholder = t('detecting');
-            
-            const loc = await utils.getCurrentLocation();
-            if (!loc) {
-                input.placeholder = t('geo_error');
-                setTimeout(() => input.placeholder = originalPlaceholder, 3000);
-                return;
-            }
-            
-            const name = await utils.reverseGeocode(loc.lat, loc.lng);
-            if (name) {
-                input.value = name;
-            } else {
-                input.placeholder = t('geo_error');
-            }
-            if(!input.value) setTimeout(() => input.placeholder = originalPlaceholder, 3000);
-        },
-
-        async openAddFuel(id = null) {
-            const activeCar = store.getActiveVehicle();
-            if (!activeCar) return this.openAddVehicle();
-            let log = { date: new Date().toISOString().split('T')[0], odometer: activeCar.currentOdometer, liters: '', cost: '', location: '', unitPrice: '' };
-            let title = t('log_fuel'), btnText = t('save_log'), hiddenId = '', deleteBtn = '';
-
-            if (id) {
-                log = store.getLog(id);
-                log.date = new Date(log.date).toISOString().split('T')[0];
-                title = t('edit_record'); btnText = t('save_changes'); hiddenId = `<input type="hidden" name="id" value="${id}">`;
-                if (log.liters > 0) log.unitPrice = (log.cost / log.liters).toFixed(2);
-                deleteBtn = `<button type="button" onclick="ui.deleteLogAndClose('${id}')" class="flex-1 bg-red-50 text-red-500 font-bold py-4 rounded-xl">${t('delete')}</button>`;
-            }
-            const isMetric = store.data.settings.unitSystem === 'metric';
-            const unitLabel = isMetric ? t('price_per_unit_l') : t('price_per_unit_g');
-
-            document.getElementById('modal-content').innerHTML = `
-                <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><span class="bg-teal-100 text-teal-600 p-2 rounded-lg">⛽️</span> ${title}</h2>
-                <form onsubmit="ui.submitLog(event, 'fuel')" class="space-y-4">
-                    ${hiddenId}
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('date')}</label><input type="date" name="date" required value="${log.date}" class="w-full bg-slate-100 p-3 rounded-xl outline-none"></div>
-                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('odometer')}</label><input type="number" name="odometer" required value="${log.odometer}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"></div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('volume')} (${isMetric ? 'L' : 'Gal'})</label><input type="number" step="0.01" name="liters" value="${log.liters}" oninput="ui.calcFuel('vol')" required class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${unitLabel}</label><input type="number" step="0.01" name="unitPrice" value="${log.unitPrice}" oninput="ui.calcFuel('price')" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
-                    </div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('cost')}</label><input type="number" step="0.01" name="cost" value="${log.cost}" oninput="ui.calcFuel('cost')" required class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label>
-                        <div class="flex gap-2">
-                            <input type="text" name="location" value="${log.location}" class="flex-1 bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('location_placeholder')}">
-                            <button type="button" onclick="ui.fetchLocationName('location')" class="bg-teal-100 text-teal-600 p-3 rounded-xl hover:bg-teal-200 transition">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <div class="bg-white rounded-2xl card-shadow overflow-hidden p-4 space-y-3">
+                            <button onclick="ui.exportData()" class="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+                                <span class="material-icons">download</span> ${utils.t('export_json')}
                             </button>
+                            <label class="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer">
+                                <span class="material-icons">upload</span> ${utils.t('import_json')}
+                                <input type="file" accept=".json" onchange="ui.importData(this)" class="hidden">
+                            </label>
                         </div>
-                    </div>
-                    <div class="flex gap-3 mt-4">
-                        ${deleteBtn}
-                        <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
-                        <button type="submit" class="flex-[2] bg-teal-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/30">${btnText}</button>
-                    </div>
-                </form>
-            `;
-            document.getElementById('modal-container').classList.remove('hidden');
-        },
 
-        calcFuel(field) {
-            const volInput = document.getElementsByName('liters')[0], costInput = document.getElementsByName('cost')[0], priceInput = document.getElementsByName('unitPrice')[0];
-            const vol = parseFloat(volInput.value) || 0, cost = parseFloat(costInput.value) || 0, price = parseFloat(priceInput.value) || 0;
-            if (field === 'vol') { if (price > 0) costInput.value = (vol * price).toFixed(2); else if (cost > 0) priceInput.value = (cost / vol).toFixed(2); }
-            else if (field === 'price') { if (vol > 0) costInput.value = (vol * price).toFixed(2); }
-            else if (field === 'cost') { if (vol > 0) priceInput.value = (cost / vol).toFixed(2); }
-        },
+                    </div>
+                `;
+            },
 
-        openAddService(id = null, defaultType = 'Maintenance') {
-            const activeCar = store.getActiveVehicle();
-            if (!activeCar) return this.openAddVehicle();
-            let log = { type: 'service', date: new Date().toISOString().split('T')[0], cost: '', note: '', location: '', expiryDate: '' };
-            let title = t('log_service'), btnText = t('save_entry'), hiddenId = '', deleteBtn = '';
+            /* --- MODALS --- */
             
-            // Default selection logic
-            let selectedType = defaultType;
-
-            if (id) {
-                log = store.getLog(id);
-                log.date = new Date(log.date).toISOString().split('T')[0];
-                title = t('edit_record'); btnText = t('save_changes'); hiddenId = `<input type="hidden" name="id" value="${id}">`;
-                deleteBtn = `<button type="button" onclick="ui.deleteLogAndClose('${id}')" class="flex-1 bg-red-50 text-red-500 font-bold py-4 rounded-xl">${t('delete')}</button>`;
+            openModal(content) {
+                const overlay = document.getElementById('modal-overlay');
+                const box = document.getElementById('modal-content');
+                box.innerHTML = content;
+                overlay.classList.remove('hidden');
+                // Trigger reflow
+                void overlay.offsetWidth; 
+                overlay.classList.remove('opacity-0');
                 
-                // Map stored type to select value
-                if (log.type === 'parking') selectedType = 'Parking';
-                else if (log.type === 'license') selectedType = 'License';
-                else if (log.type === 'insurance') selectedType = 'Insurance';
-                else if (log.type === 'registration') selectedType = 'Registration';
-                else selectedType = 'Maintenance';
-            }
+                // Click outside to close logic
+                overlay.onclick = (e) => {
+                    if (e.target === overlay) {
+                        this.closeModal();
+                    }
+                };
+            },
 
-            document.getElementById('modal-content').innerHTML = `
-                <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><span class="bg-orange-100 text-orange-600 p-2 rounded-lg">🔧</span> ${title}</h2>
-                <form onsubmit="ui.submitLog(event, 'service')" class="space-y-4">
-                    ${hiddenId}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('service_type')}</label>
-                        <select name="subType" id="service-type-select" onchange="ui.toggleExpiryField()" class="w-full bg-slate-100 p-3 rounded-xl outline-none">
-                            <option value="Maintenance" ${selectedType === 'Maintenance' ? 'selected' : ''}>${t('type_maint')}</option>
-                            <option value="Parking" ${selectedType === 'Parking' ? 'selected' : ''}>${t('type_parking')}</option>
-                            <option value="License" ${selectedType === 'License' ? 'selected' : ''}>${t('type_license')}</option>
-                            <option value="Insurance" ${selectedType === 'Insurance' ? 'selected' : ''}>${t('type_insurance')}</option>
-                            <option value="Registration" ${selectedType === 'Registration' ? 'selected' : ''}>${t('type_registration')}</option>
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('date')}</label><input type="date" name="date" required value="${log.date}" class="w-full bg-slate-100 p-3 rounded-xl outline-none"></div>
-                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('cost')}</label><input type="number" step="0.01" name="cost" required value="${log.cost}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="0.00"></div>
-                    </div>
-                    
-                    <div id="expiry-field" class="${(log.type === 'license' || log.type === 'insurance' || log.type === 'registration') ? '' : 'hidden'}">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('new_expiry')}</label>
-                        <input type="date" name="expiryDate" value="${log.expiryDate || ''}" class="w-full bg-slate-100 p-3 rounded-xl outline-none border-2 border-teal-100 focus:border-teal-500">
-                    </div>
+            closeModal() {
+                const overlay = document.getElementById('modal-overlay');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    document.getElementById('modal-content').innerHTML = '';
+                }, 300);
+            },
 
-                    <div id="note-field">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('note')}</label>
-                        <input type="text" name="note" value="${log.note}" class="w-full bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('log_placeholder_note')}">
+            // Vehicle Form
+            openAddVehicle(id = null) {
+                const vehicle = id ? store.data.vehicles.find(v => v.id === id) : null;
+                const isEdit = !!vehicle;
+                
+                this.openModal(`
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">${isEdit ? utils.t('edit_vehicle') : utils.t('add_vehicle')}</h3>
+                        <form onsubmit="event.preventDefault(); ui.submitVehicle('${id || ''}')" class="space-y-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">Year</label>
+                                <input type="number" id="v-year" value="${vehicle?.year || new Date().getFullYear()}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-sky-500 font-bold" required>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">Make</label>
+                                <input type="text" id="v-make" value="${vehicle?.make || ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-sky-500 font-bold" required>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">Model</label>
+                                <input type="text" id="v-model" value="${vehicle?.model || ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-sky-500 font-bold" required>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('odometer')}</label>
+                                <input type="number" id="v-odo" value="${vehicle?.currentOdometer || 0}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-sky-500 font-bold" required>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 mt-6">
+                                ${isEdit ? `
+                                    <button type="button" onclick="ui.deleteVehicle('${id}')" class="bg-red-50 text-red-500 font-bold py-3 rounded-xl">${utils.t('delete')}</button>
+                                ` : `<button type="button" onclick="ui.closeModal()" class="bg-slate-100 text-slate-500 font-bold py-3 rounded-xl">${utils.t('cancel')}</button>`}
+                                <button type="submit" class="bg-sky-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-sky-200">${utils.t('save')}</button>
+                            </div>
+                            
+                            ${isEdit ? `
+                                <div class="mt-6 pt-6 border-t border-slate-100">
+                                    <button type="button" onclick="ui.clearVehicleData('${id}')" class="w-full bg-red-500 text-white font-bold py-3 rounded-xl shadow-md hover:bg-red-600 transition">
+                                        ${utils.t('clear_history')}
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </form>
                     </div>
-                    <div id="location-field">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${t('location')}</label>
-                        <div class="flex gap-2">
-                            <input type="text" name="location" value="${log.location || ''}" class="flex-1 bg-slate-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="${t('location_placeholder')}">
-                            <button type="button" onclick="ui.fetchLocationName('location')" class="bg-teal-100 text-teal-600 p-3 rounded-xl hover:bg-teal-200 transition">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            </button>
+                `);
+            },
+
+            submitVehicle(id) {
+                const year = document.getElementById('v-year').value;
+                const make = document.getElementById('v-make').value;
+                const model = document.getElementById('v-model').value;
+                const odo = document.getElementById('v-odo').value;
+
+                const vehicle = {
+                    id: id || utils.uuid(),
+                    year, make, model, currentOdometer: parseInt(odo)
+                };
+
+                if (id) store.updateVehicle(vehicle);
+                else store.addVehicle(vehicle);
+                
+                this.closeModal();
+                this.render();
+            },
+            
+            deleteVehicle(id) {
+                setTimeout(() => {
+                    if(window.confirm(utils.t('confirm_delete'))) {
+                        store.deleteVehicle(id);
+                        this.closeModal();
+                        this.render();
+                    }
+                }, 50);
+            },
+
+            clearVehicleData(id) {
+                setTimeout(() => {
+                    if(window.confirm(utils.t('confirm_clear_1'))) {
+                        setTimeout(() => {
+                            if(window.confirm(utils.t('confirm_clear_2'))) {
+                                store.clearVehicleLogs(id);
+                                this.closeModal();
+                                this.render();
+                            }
+                        }, 200);
+                    }
+                }, 50);
+            },
+            
+            // Vehicle Selector Modal
+            openVehicleSelector() {
+                const vehicles = store.data.vehicles;
+                if(vehicles.length === 0) return;
+                
+                const list = vehicles.map(v => `
+                    <button onclick="store.data.settings.activeVehicleId='${v.id}';store.save();ui.closeModal();ui.render()" 
+                        class="w-full p-4 flex items-center gap-4 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition text-left">
+                        <div class="w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
+                            ${v.make[0]}
+                        </div>
+                        <div>
+                            <div class="font-bold text-slate-800">${v.model}</div>
+                            <div class="text-xs text-slate-400">${v.year} ${v.make}</div>
+                        </div>
+                        ${v.id === store.data.settings.activeVehicleId ? '<span class="material-icons text-green-500 ml-auto">check_circle</span>' : ''}
+                    </button>
+                `).join('');
+
+                this.openModal(`
+                    <div class="p-2">
+                        <h3 class="p-4 text-lg font-bold text-slate-700 border-b border-slate-100">${utils.t('select_vehicle')}</h3>
+                        <div class="max-h-[60vh] overflow-y-auto">
+                            ${list}
+                        </div>
+                        <div class="p-2">
+                            <button onclick="ui.closeModal();ui.openAddVehicle()" class="w-full py-3 text-sky-600 font-bold">+ ${utils.t('add_vehicle')}</button>
                         </div>
                     </div>
-                    <div class="flex gap-3 mt-4">
-                        ${deleteBtn}
-                        <button type="button" onclick="ui.closeModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-xl">${t('cancel')}</button>
-                        <button type="submit" class="flex-[2] bg-teal-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/30">${btnText}</button>
+                `);
+            },
+
+            // Fuel Form
+            openAddFuel(id = null) {
+                const log = id ? store.data.logs.find(l => l.id === id) : null;
+                const isEdit = !!log;
+                
+                this.openModal(`
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">${isEdit ? utils.t('edit') : utils.t('add_fuel')}</h3>
+                        <form onsubmit="event.preventDefault(); ui.submitFuel('${id||''}')" class="space-y-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('date')}</label>
+                                <input type="date" id="f-date" value="${log?.date || new Date().toISOString().split('T')[0]}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-bold" required>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('odometer')}</label>
+                                <input type="number" id="f-odo" value="${log?.odometer || ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-bold" required>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('liters')}</label>
+                                    <input type="number" step="0.01" id="f-liters" value="${log?.liters || ''}" oninput="ui.calcFuel('vol')" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-bold" required>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('price_unit')}</label>
+                                    <input type="number" step="0.001" id="f-price" value="${log?.pricePerUnit || ''}" oninput="ui.calcFuel('price')" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-bold">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('cost')}</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-3 text-slate-400 font-bold">${store.data.settings.currency}</span>
+                                    <input type="number" step="0.01" id="f-cost" value="${log?.cost || ''}" oninput="ui.calcFuel('cost')" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 pl-8 outline-none font-bold" required>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('location')}</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="f-loc" value="${log?.location || ''}" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-bold">
+                                    <button type="button" onclick="ui.detectLocation('f-loc')" class="bg-sky-100 text-sky-600 p-3 rounded-xl">
+                                        <span class="material-icons">my_location</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 mt-6">
+                                ${isEdit ? `
+                                    <button type="button" onclick="ui.deleteLog('${id}')" class="bg-red-50 text-red-500 font-bold py-3 rounded-xl">${utils.t('delete')}</button>
+                                ` : `<button type="button" onclick="ui.closeModal()" class="bg-slate-100 text-slate-500 font-bold py-3 rounded-xl">${utils.t('cancel')}</button>`}
+                                <button type="submit" class="bg-teal-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-teal-200">${utils.t('save')}</button>
+                            </div>
+                        </form>
                     </div>
-                </form>
-            `;
-            document.getElementById('modal-container').classList.remove('hidden');
-            
-            // Trigger initial state to hide/show fields correctly based on loaded type
-            this.toggleExpiryField();
-        },
+                `);
+            },
 
-        toggleExpiryField() {
-            const type = document.getElementById('service-type-select').value;
-            const expiryEl = document.getElementById('expiry-field');
-            const noteEl = document.getElementById('note-field');
-            const locEl = document.getElementById('location-field');
-            
-            const isDoc = ['License', 'Insurance', 'Registration'].includes(type);
+            calcFuel(trigger) {
+                const volEl = document.getElementById('f-liters');
+                const priceEl = document.getElementById('f-price');
+                const costEl = document.getElementById('f-cost');
+                
+                const vol = parseFloat(volEl.value) || 0;
+                const price = parseFloat(priceEl.value) || 0;
+                const cost = parseFloat(costEl.value) || 0;
 
-            if (isDoc) {
-                expiryEl.classList.remove('hidden');
-                noteEl.classList.add('hidden');
-                locEl.classList.add('hidden');
-            } else {
-                expiryEl.classList.add('hidden');
-                noteEl.classList.remove('hidden');
-                locEl.classList.remove('hidden');
+                if (trigger === 'vol' && price > 0) {
+                    costEl.value = (vol * price).toFixed(2);
+                } else if (trigger === 'price' && vol > 0) {
+                    costEl.value = (vol * price).toFixed(2);
+                } else if (trigger === 'cost' && vol > 0) {
+                    priceEl.value = (cost / vol).toFixed(3);
+                }
+            },
+
+            submitFuel(id) {
+                const log = {
+                    id: id || utils.uuid(),
+                    vehicleId: store.data.settings.activeVehicleId,
+                    type: 'fuel',
+                    date: document.getElementById('f-date').value,
+                    odometer: parseFloat(document.getElementById('f-odo').value),
+                    liters: parseFloat(document.getElementById('f-liters').value),
+                    pricePerUnit: parseFloat(document.getElementById('f-price').value),
+                    cost: parseFloat(document.getElementById('f-cost').value),
+                    location: document.getElementById('f-loc').value
+                };
+                
+                if(id) store.updateLog(log);
+                else store.addLog(log);
+                
+                this.closeModal();
+                this.render();
+            },
+
+            // Service/Maintenance/Parking Form
+            openAddService(id = null, defaultType = 'maintenance') {
+                const log = id ? store.data.logs.find(l => l.id === id) : null;
+                const isEdit = !!log;
+                const currentType = log?.type || defaultType;
+                
+                const typeOptions = [
+                    {val: 'maintenance', lbl: utils.t('maintenance')},
+                    {val: 'parking', lbl: utils.t('t_parking')},
+                    {val: 'license', lbl: utils.t('license_renewal')},
+                    {val: 'insurance', lbl: utils.t('insurance_renewal')},
+                    {val: 'registration', lbl: utils.t('registration')},
+                ];
+
+                this.openModal(`
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">${isEdit ? utils.t('edit') : utils.t('add_service')}</h3>
+                        <form onsubmit="event.preventDefault(); ui.submitService('${id||''}')" class="space-y-4">
+                             <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('type')}</label>
+                                <select id="s-type" onchange="ui.toggleExpiryField()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-bold">
+                                    ${typeOptions.map(o => `<option value="${o.val}" ${currentType === o.val ? 'selected' : ''}>${o.lbl}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('date')}</label>
+                                <input type="date" id="s-date" value="${log?.date || new Date().toISOString().split('T')[0]}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-bold" required>
+                            </div>
+                             
+                            <!-- Conditional Expiry Field -->
+                            <div id="expiry-field" class="${['license','insurance','registration'].includes(currentType) ? '' : 'hidden'}">
+                                <label class="text-xs font-bold text-orange-500 uppercase block mb-1">${utils.t('new_expiry')}</label>
+                                <input type="date" id="s-expiry" value="${log?.expiryDate || ''}" class="w-full bg-orange-50 border border-orange-200 rounded-xl p-3 outline-none font-bold text-orange-700">
+                            </div>
+
+                            <div id="odo-field">
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('odometer')}</label>
+                                <input type="number" id="s-odo" value="${log?.odometer || ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-bold">
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('cost')}</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-3 text-slate-400 font-bold">${store.data.settings.currency}</span>
+                                    <input type="number" step="0.01" id="s-cost" value="${log?.cost || ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 pl-8 outline-none font-bold" required>
+                                </div>
+                            </div>
+                            
+                            <div id="extra-fields" class="${['license','insurance','registration'].includes(currentType) ? 'hidden' : ''}">
+                                <div>
+                                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('location')}</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="s-loc" value="${log?.location || ''}" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-bold">
+                                        <button type="button" onclick="ui.detectLocation('s-loc')" class="bg-sky-100 text-sky-600 p-3 rounded-xl">
+                                            <span class="material-icons">my_location</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('notes')}</label>
+                                    <textarea id="s-notes" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-bold">${log?.notes || ''}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 mt-6">
+                                ${isEdit ? `
+                                    <button type="button" onclick="ui.deleteLog('${id}')" class="bg-red-50 text-red-500 font-bold py-3 rounded-xl">${utils.t('delete')}</button>
+                                ` : `<button type="button" onclick="ui.closeModal()" class="bg-slate-100 text-slate-500 font-bold py-3 rounded-xl">${utils.t('cancel')}</button>`}
+                                <button type="submit" class="bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200">${utils.t('save')}</button>
+                            </div>
+                        </form>
+                    </div>
+                `);
+            },
+
+            toggleExpiryField() {
+                const type = document.getElementById('s-type').value;
+                const isDoc = ['license', 'insurance', 'registration'].includes(type);
+                const expiryDiv = document.getElementById('expiry-field');
+                const extraDiv = document.getElementById('extra-fields');
+                
+                if (isDoc) {
+                    expiryDiv.classList.remove('hidden');
+                    extraDiv.classList.add('hidden');
+                } else {
+                    expiryDiv.classList.add('hidden');
+                    extraDiv.classList.remove('hidden');
+                }
+            },
+
+            submitService(id) {
+                const type = document.getElementById('s-type').value;
+                const isDoc = ['license', 'insurance', 'registration'].includes(type);
+
+                const log = {
+                    id: id || utils.uuid(),
+                    vehicleId: store.data.settings.activeVehicleId,
+                    type: type,
+                    date: document.getElementById('s-date').value,
+                    odometer: parseFloat(document.getElementById('s-odo').value) || 0,
+                    cost: parseFloat(document.getElementById('s-cost').value),
+                    // Conditional fields
+                    expiryDate: isDoc ? document.getElementById('s-expiry').value : null,
+                    location: isDoc ? '' : document.getElementById('s-loc').value,
+                    notes: isDoc ? '' : document.getElementById('s-notes').value
+                };
+
+                if(id) store.updateLog(log);
+                else store.addLog(log);
+                
+                this.closeModal();
+                this.render();
+            },
+
+            deleteLog(id) {
+                setTimeout(() => {
+                    if(window.confirm(utils.t('confirm_delete'))) {
+                        store.deleteLog(id);
+                        this.closeModal();
+                        this.render();
+                    }
+                }, 50);
+            },
+
+            // Geocoding
+            detectLocation(inputId) {
+                if (!navigator.geolocation) {
+                    alert("Geolocation is not supported by your browser");
+                    return;
+                }
+                
+                const btn = document.querySelector(`button[onclick="ui.detectLocation('${inputId}')"]`);
+                const originalIcon = btn.innerHTML;
+                btn.innerHTML = '<span class="material-icons animate-spin">refresh</span>';
+
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    try {
+                        // Reverse Geocoding using OpenStreetMap Nominatim (Free)
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                        const data = await response.json();
+                        // Try to get a meaningful name (poi -> road -> suburb)
+                        const addr = data.address;
+                        let name = data.name || '';
+                        
+                        if (!name) {
+                             if (addr.amenity) name = addr.amenity;
+                             else if (addr.building) name = addr.building;
+                             else if (addr.road) name = addr.road;
+                        }
+                        
+                        document.getElementById(inputId).value = name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                    } catch (e) {
+                        document.getElementById(inputId).value = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                    }
+                    btn.innerHTML = originalIcon;
+                }, () => {
+                    alert("Unable to retrieve your location");
+                    btn.innerHTML = originalIcon;
+                });
+            },
+
+            exportData() {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(store.data));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "fuelmate_backup.json");
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+            },
+
+            importData(input) {
+                const file = input.files[0];
+                if (!file) return;
+                
+                // Security: Confirm overwrite
+                setTimeout(() => {
+                    if(!confirm(utils.t('confirm_overwrite'))) {
+                        input.value = ''; // Reset input
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const json = JSON.parse(e.target.result);
+                            if (json.vehicles && json.logs) {
+                                store.data = json;
+                                store.save();
+                                alert(utils.t('import_success'));
+                                ui.render();
+                            } else {
+                                alert(utils.t('import_error'));
+                            }
+                        } catch (ex) {
+                            alert(utils.t('import_error'));
+                        } finally {
+                            input.value = ''; // Reset input to allow re-selecting same file
+                        }
+                    };
+                    reader.readAsText(file);
+                }, 50);
             }
-        },
+        };
 
-        submitVehicle(e) {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            const id = fd.get('id');
-            const vehicleData = {
-                make: fd.get('make'), model: fd.get('model'), year: fd.get('year'), currentOdometer: parseInt(fd.get('odometer'))
-            };
-            if (id) { vehicleData.id = id; store.updateVehicle(vehicleData); } else { store.addVehicle(vehicleData); }
-            this.closeModal(); router.navigate('dashboard');
-        },
+        /* --- ROUTER --- */
+        const router = {
+            navigate(page) {
+                ui.currentPage = page;
+                ui.render();
+            }
+        };
 
-        submitLog(e, routeType) {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            const activeCar = store.getActiveVehicle();
-            const id = fd.get('id');
-            const subType = fd.get('subType');
-            
-            let finalType = routeType;
-            // Because we use openAddService for both Service and Parking pages, 
-            // we check the dropdown value (subType) to determine the final type
-            if (subType === 'Parking') finalType = 'parking';
-            else if (subType === 'Maintenance') finalType = 'service';
-            else if (subType === 'License') finalType = 'license';
-            else if (subType === 'Insurance') finalType = 'insurance';
-            else if (subType === 'Registration') finalType = 'registration';
-            
-            if (routeType === 'fuel') finalType = 'fuel';
+        /* --- INIT --- */
+        store.init();
+        ui.render();
 
-            // For document types, we don't need Note and Location
-            const isDoc = ['license', 'insurance', 'registration'].includes(finalType);
-            
-            const logData = {
-                vehicleId: activeCar.id, type: finalType, date: fd.get('date'), cost: fd.get('cost'),
-                odometer: fd.get('odometer') ? parseInt(fd.get('odometer')) : (activeCar.currentOdometer),
-                liters: fd.get('liters') || 0, 
-                location: isDoc ? '' : (fd.get('location') || ''), 
-                note: isDoc ? '' : (fd.get('note') || ''),
-                expiryDate: fd.get('expiryDate') || ''
-            };
-            
-            if (id) { logData.id = id; store.updateLog(logData); } else { store.addLog(logData); }
-            this.closeModal(); 
-            
-            // Redirect back to appropriate page
-            if (finalType === 'fuel') router.navigate('fuel');
-            else if (finalType === 'parking') router.navigate('parking');
-            else router.navigate('maintenance');
-        },
-
-        deleteLogAndClose(id) {
-            if(confirm(t('confirm_delete'))) { store.deleteLog(id); this.closeModal(); router.navigate(router.current); }
-        },
-
-        switchVehicle(id) { store.data.settings.activeVehicleId = id; store.save(); router.navigate('dashboard'); },
-        updateSetting(key, val) { store.data.settings[key] = val; store.save(); router.navigate(router.current); }
-    };
-
-    window.addEventListener('DOMContentLoaded', () => {
-        store.init(); router.navigate('dashboard');
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register(URL.createObjectURL(new Blob([`
-                const CACHE_NAME = 'fuelmate-v1';
-                const urlsToCache = ['./','./index.html','https://cdn.tailwindcss.com','https://cdn.jsdelivr.net/npm/chart.js'];
-                self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))); });
-                self.addEventListener('fetch', event => { event.respondWith(caches.match(event.request).then(response => response || fetch(event.request))); });
-            `], {type: 'text/javascript'}))).catch(err => console.log('SW failed', err));
-        }
-    });
     </script>
 </body>
 </html>
