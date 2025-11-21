@@ -181,7 +181,9 @@
                 parking_cost: "PARKING COST", service_cost: "SERVICE COST", fixed_costs: "FIXED COSTS",
                 maintenance: "Maintenance",
                 notif_settings: "Notifications", reminder_timing: "Remind me", 
-                day_0: "On the day", day_7: "1 Week before", day_30: "1 Month before"
+                day_0: "On the day", day_7: "1 Week before", day_30: "1 Month before",
+                export_cal_title: "Add to Calendar", export_cal_desc: "Select an item to add to your iPhone calendar",
+                no_expiry_found: "No expiry date found for this item. Please add a record first."
             },
             zh: {
                 t_dash: "首頁", t_fuel: "加油", t_service: "維修/其他", t_parking: "停車", t_analytics: "統計", t_settings: "設定",
@@ -208,7 +210,9 @@
                 parking_cost: "停車總支出", service_cost: "維修總支出", fixed_costs: "固定支出 (牌照/保險)",
                 maintenance: "維修保養/牌照",
                 notif_settings: "提醒通知設定", reminder_timing: "提醒時間", 
-                day_0: "當天提醒", day_7: "提早 1 週", day_30: "提早 1 個月"
+                day_0: "當天提醒", day_7: "提早 1 週", day_30: "提早 1 個月",
+                export_cal_title: "加入日曆", export_cal_desc: "選擇要加入 iPhone 日曆的項目",
+                no_expiry_found: "找不到此項目的到期日，請先新增記錄。"
             }
         };
 
@@ -420,14 +424,22 @@
                 }
                 return logs;
             },
-            exportCalendar() {
+            exportCalendar(specificType = null) {
                 const vehicle = store.getActiveVehicle();
                 if(!vehicle) return;
                 const logs = store.getVehicleLogs().filter(l => ['license', 'insurance', 'registration'].includes(l.type) && l.expiryDate);
                 
-                // Find latest expiry for each type
+                // Filter if specific type requested
+                const targetLogs = specificType ? logs.filter(l => l.type === specificType) : logs;
+
+                if (targetLogs.length === 0) {
+                    alert(utils.t('no_expiry_found'));
+                    return;
+                }
+
+                // Find latest expiry for each type in the selection
                 const latest = {};
-                logs.forEach(l => {
+                targetLogs.forEach(l => {
                     if (!latest[l.type] || new Date(l.expiryDate) > new Date(latest[l.type].expiryDate)) {
                         latest[l.type] = l;
                     }
@@ -449,7 +461,7 @@
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = 'vehicle_reminders.ics';
+                link.download = `fuelmate_${specificType || 'reminders'}.ics`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -551,7 +563,7 @@
                                 </button>
                             </div>
                              <div class="flex gap-2">
-                                <button onclick="utils.exportCalendar()" class="bg-white/20 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-sm hover:bg-white/30 transition">
+                                <button onclick="ui.openCalendarSelector()" class="bg-white/20 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-sm hover:bg-white/30 transition">
                                     <span class="material-icons text-white text-xl">event</span>
                                 </button>
                                 <button onclick="ui.openAddVehicle('${vehicle.id}')" class="bg-white/20 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-sm hover:bg-white/30 transition">
@@ -1026,6 +1038,43 @@
                     overlay.classList.add('hidden');
                     document.getElementById('modal-content').innerHTML = '';
                 }, 300);
+            },
+
+            openCalendarSelector() {
+                this.openModal(`
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-slate-800 mb-2">${utils.t('export_cal_title')}</h3>
+                        <p class="text-sm text-slate-500 mb-6">${utils.t('export_cal_desc')}</p>
+                        
+                        <div class="space-y-3">
+                            <button onclick="utils.exportCalendar('license'); ui.closeModal()" class="w-full p-4 bg-slate-50 rounded-2xl flex items-center gap-4 hover:bg-sky-50 border border-transparent hover:border-sky-200 transition">
+                                <div class="w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center">
+                                    <span class="material-icons">description</span>
+                                </div>
+                                <div class="text-left font-bold text-slate-700 flex-1">${utils.t('license_renewal')}</div>
+                                <span class="material-icons text-slate-300">chevron_right</span>
+                            </button>
+                            
+                            <button onclick="utils.exportCalendar('insurance'); ui.closeModal()" class="w-full p-4 bg-slate-50 rounded-2xl flex items-center gap-4 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition">
+                                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                    <span class="material-icons">security</span>
+                                </div>
+                                <div class="text-left font-bold text-slate-700 flex-1">${utils.t('insurance_renewal')}</div>
+                                <span class="material-icons text-slate-300">chevron_right</span>
+                            </button>
+
+                            <button onclick="utils.exportCalendar('registration'); ui.closeModal()" class="w-full p-4 bg-slate-50 rounded-2xl flex items-center gap-4 hover:bg-teal-50 border border-transparent hover:border-teal-200 transition">
+                                <div class="w-10 h-10 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center">
+                                    <span class="material-icons">confirmation_number</span>
+                                </div>
+                                <div class="text-left font-bold text-slate-700 flex-1">${utils.t('registration')}</div>
+                                <span class="material-icons text-slate-300">chevron_right</span>
+                            </button>
+                        </div>
+                        
+                        <button onclick="ui.closeModal()" class="w-full mt-6 py-3 text-slate-400 font-bold">${utils.t('cancel')}</button>
+                    </div>
+                `);
             },
 
             // Vehicle Form
