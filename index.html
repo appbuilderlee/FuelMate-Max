@@ -175,7 +175,13 @@
             reminders: 'Reminders', expired: 'Expired', days_left: 'days left',
             fixed_costs: 'Annual Fixed Costs', section_fixed: 'Fixed Costs & Expiry',
             detecting: 'Locating...', geo_error: 'Location not found',
-            new_expiry: 'New Expiry Date'
+            new_expiry: 'New Expiry Date',
+            calendar_export: 'Add to Calendar', no_reminders: 'No future expiries found',
+            calendar_added: 'Reminders exported. Open file to add to Calendar.',
+            clear_history: 'Clear Vehicle History',
+            clear_warn_1: 'Are you sure? This deletes ALL fuel, service, and parking logs for this vehicle.',
+            clear_warn_2: 'Final Confirmation: This cannot be undone.',
+            history_cleared: 'All vehicle records cleared.'
         },
         zh: {
             nav_dash: '首頁', nav_fuel: '加油', nav_parking: '停車', nav_service: '維修/其他', nav_stats: '統計', nav_settings: '設定',
@@ -213,7 +219,13 @@
             reminders: '提醒通知', expired: '已過期', days_left: '天後到期',
             fixed_costs: '年度固定支出', section_fixed: '車牌與保險',
             detecting: '定位中...', geo_error: '無法獲取位置',
-            new_expiry: '新到期日'
+            new_expiry: '新到期日',
+            calendar_export: '加入行事曆', no_reminders: '沒有即將到期的項目',
+            calendar_added: '已下載提醒事項，請開啟檔案以加入行事曆。',
+            clear_history: '清除歷史紀錄',
+            clear_warn_1: '您確定嗎？這將永久刪除此車輛的所有加油、維修和停車紀錄。',
+            clear_warn_2: '再次確認：此操作無法撤銷。',
+            history_cleared: '所有車輛紀錄已清除。'
         }
     };
 
@@ -301,6 +313,11 @@
 
         deleteLog(id) {
             this.data.logs = this.data.logs.filter(l => l.id !== id);
+            this.save();
+        },
+
+        clearVehicleLogs(vehicleId) {
+            this.data.logs = this.data.logs.filter(l => l.vehicleId !== vehicleId);
             this.save();
         },
 
@@ -514,8 +531,13 @@
                                 <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </h1>
                         </div>
-                        <div class="bg-white/20 p-2 rounded-full backdrop-blur-sm">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <div class="flex items-center gap-2">
+                            <button onclick="ui.exportToCalendar()" class="bg-white/20 p-2 rounded-full backdrop-blur-sm active:bg-white/30 transition">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </button>
+                            <div class="bg-white/20 p-2 rounded-full backdrop-blur-sm">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                            </div>
                         </div>
                     </div>
             `;
@@ -582,6 +604,55 @@
                 </div>
             `;
             container.innerHTML = html;
+        },
+
+        exportToCalendar() {
+            const car = store.getActiveVehicle();
+            if (!car) return;
+            
+            const lic = store.getLatestLog(car.id, 'license');
+            const ins = store.getLatestLog(car.id, 'insurance');
+            const reg = store.getLatestLog(car.id, 'registration');
+            
+            let events = [];
+            const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            
+            const addEvent = (log, summary) => {
+                if (log && log.expiryDate) {
+                    const dateStr = log.expiryDate.replace(/-/g, ''); // YYYYMMDD
+                    events.push(`BEGIN:VEVENT
+UID:${log.id}@fuelmate
+DTSTAMP:${now}
+DTSTART;VALUE=DATE:${dateStr}
+SUMMARY:${summary} (${car.make} ${car.model})
+DESCRIPTION:Renewal Cost: ${utils.formatCurrency(log.cost)}
+END:VEVENT`);
+                }
+            };
+
+            addEvent(lic, t('type_license'));
+            addEvent(ins, t('type_insurance'));
+            addEvent(reg, t('type_registration'));
+
+            if (events.length === 0) {
+                alert(t('no_reminders'));
+                return;
+            }
+
+            const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//FuelMate//Car Tracker//EN
+${events.join('\n')}
+END:VCALENDAR`;
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', 'vehicle_reminders.ics');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            alert(t('calendar_added'));
         },
 
         renderReminders(car) {
@@ -1099,10 +1170,18 @@
             const content = document.getElementById('modal-content');
             let vehicle = { make: '', model: '', year: '', currentOdometer: '' };
             let title = t('add_vehicle'), btnText = t('save_vehicle'), hiddenId = '';
+            let clearBtn = '';
 
             if (id) {
                 vehicle = store.getVehicle(id) || vehicle;
                 title = t('edit_vehicle'); btnText = t('save_changes'); hiddenId = `<input type="hidden" name="id" value="${id}">`;
+                clearBtn = `
+                    <div class="mt-8 pt-6 border-t border-slate-100">
+                        <button type="button" onclick="ui.clearVehicleData('${id}')" class="w-full bg-red-50 text-red-500 font-bold py-3 rounded-xl border border-red-100 flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            ${t('clear_history')}
+                        </button>
+                    </div>`;
             }
 
             content.innerHTML = `
@@ -1120,8 +1199,25 @@
                         <button type="submit" class="flex-[2] bg-teal-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/30">${btnText}</button>
                     </div>
                 </form>
+                ${clearBtn}
             `;
             document.getElementById('modal-container').classList.remove('hidden');
+        },
+
+        clearVehicleData(id) {
+            // Use setTimeout to prevent iOS UI thread blocking on click events
+            setTimeout(() => {
+                if (window.confirm(t('clear_warn_1'))) {
+                    setTimeout(() => {
+                        if (window.confirm(t('clear_warn_2'))) {
+                            store.clearVehicleLogs(id);
+                            window.alert(t('history_cleared'));
+                            ui.closeModal();
+                            router.navigate('dashboard');
+                        }
+                    }, 50);
+                }
+            }, 50);
         },
 
         async fetchLocationName(fieldName) {
@@ -1339,4 +1435,30 @@
             this.closeModal(); 
             
             // Redirect back to appropriate page
-            if (finalType
+            if (finalType === 'fuel') router.navigate('fuel');
+            else if (finalType === 'parking') router.navigate('parking');
+            else router.navigate('maintenance');
+        },
+
+        deleteLogAndClose(id) {
+            if(confirm(t('confirm_delete'))) { store.deleteLog(id); this.closeModal(); router.navigate(router.current); }
+        },
+
+        switchVehicle(id) { store.data.settings.activeVehicleId = id; store.save(); router.navigate('dashboard'); },
+        updateSetting(key, val) { store.data.settings[key] = val; store.save(); router.navigate(router.current); }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+        store.init(); router.navigate('dashboard');
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(URL.createObjectURL(new Blob([`
+                const CACHE_NAME = 'fuelmate-v1';
+                const urlsToCache = ['./','./index.html','https://cdn.tailwindcss.com','https://cdn.jsdelivr.net/npm/chart.js'];
+                self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))); });
+                self.addEventListener('fetch', event => { event.respondWith(caches.match(event.request).then(response => response || fetch(event.request))); });
+            `], {type: 'text/javascript'}))).catch(err => console.log('SW failed', err));
+        }
+    });
+    </script>
+</body>
+</html>
