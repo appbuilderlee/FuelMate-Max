@@ -179,7 +179,9 @@
                 license_renewal: "License Renewal", insurance_renewal: "Insurance Renewal", registration: "Vehicle Registration",
                 new_expiry: "NEW EXPIRY DATE", detect_loc: "Detect",
                 parking_cost: "PARKING COST", service_cost: "SERVICE COST", fixed_costs: "FIXED COSTS",
-                maintenance: "Maintenance"
+                maintenance: "Maintenance",
+                notif_settings: "Notifications", reminder_timing: "Remind me", 
+                day_0: "On the day", day_7: "1 Week before", day_30: "1 Month before"
             },
             zh: {
                 t_dash: "首頁", t_fuel: "加油", t_service: "維修/其他", t_parking: "停車", t_analytics: "統計", t_settings: "設定",
@@ -204,7 +206,9 @@
                 license_renewal: "車牌續期", insurance_renewal: "保險續期", registration: "車輛登記",
                 new_expiry: "新到期日", detect_loc: "定位",
                 parking_cost: "停車總支出", service_cost: "維修總支出", fixed_costs: "固定支出 (牌照/保險)",
-                maintenance: "維修保養/牌照"
+                maintenance: "維修保養/牌照",
+                notif_settings: "提醒通知設定", reminder_timing: "提醒時間", 
+                day_0: "當天提醒", day_7: "提早 1 週", day_30: "提早 1 個月"
             }
         };
 
@@ -213,7 +217,18 @@
             data: {
                 vehicles: [],
                 logs: [],
-                settings: { activeVehicleId: null, units: 'metric', currency: '$', language: 'en' }
+                settings: { 
+                    activeVehicleId: null, 
+                    units: 'metric', 
+                    currency: '$', 
+                    language: 'en',
+                    // Default reminder settings
+                    reminders: {
+                        license: { enabled: true, days: 30 },
+                        insurance: { enabled: true, days: 30 },
+                        registration: { enabled: true, days: 30 }
+                    }
+                }
             },
             pageFilters: {
                 fuel: 'month',
@@ -222,7 +237,18 @@
             },
             init() {
                 const saved = localStorage.getItem('fuelmate_data');
-                if (saved) this.data = JSON.parse(saved);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    this.data = { ...this.data, ...parsed };
+                    // Merge settings in case of new keys
+                    if (!this.data.settings.reminders) {
+                        this.data.settings.reminders = {
+                            license: { enabled: true, days: 30 },
+                            insurance: { enabled: true, days: 30 },
+                            registration: { enabled: true, days: 30 }
+                        };
+                    }
+                }
                 // Migration: ensure settings has language
                 if (!this.data.settings.language) this.data.settings.language = 'en';
             },
@@ -480,15 +506,28 @@
                 const logs = store.getVehicleLogs();
                 const reminderTypes = ['license', 'insurance', 'registration'];
                 const reminders = [];
+                const settings = store.data.settings.reminders || {
+                    license: { enabled: true, days: 30 },
+                    insurance: { enabled: true, days: 30 },
+                    registration: { enabled: true, days: 30 }
+                };
                 
                 reminderTypes.forEach(type => {
-                    const typeLogs = logs.filter(l => l.type === type && l.expiryDate);
-                    if (typeLogs.length > 0) {
-                        // Get latest
-                        const latest = typeLogs.sort((a,b) => new Date(b.expiryDate) - new Date(a.expiryDate))[0];
-                        const days = Math.ceil((new Date(latest.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
-                        if (days <= 30) {
-                            reminders.push({ ...latest, days });
+                    // Check if this reminder type is enabled
+                    const conf = settings[type];
+                    if (!conf || conf.enabled) {
+                        const threshold = conf ? conf.days : 30;
+                        
+                        const typeLogs = logs.filter(l => l.type === type && l.expiryDate);
+                        if (typeLogs.length > 0) {
+                            // Get latest
+                            const latest = typeLogs.sort((a,b) => new Date(b.expiryDate) - new Date(a.expiryDate))[0];
+                            const days = Math.ceil((new Date(latest.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+                            
+                            // Show if days left is less than setting, OR if it's expired (days < 0)
+                            if (days <= threshold) {
+                                reminders.push({ ...latest, days });
+                            }
                         }
                     }
                 });
@@ -854,12 +893,19 @@
 
             renderSettings(container) {
                 const settings = store.data.settings;
+                const reminders = settings.reminders || {
+                    license: { enabled: true, days: 30 },
+                    insurance: { enabled: true, days: 30 },
+                    registration: { enabled: true, days: 30 }
+                };
+
                 container.innerHTML = `
                     <div class="sticky-header px-4 pb-4 shadow-sm">
                         <h1 class="text-2xl font-bold text-slate-800 pt-4">${utils.t('settings_title')}</h1>
                     </div>
                     <div class="p-4 pb-24 space-y-6">
                         
+                        <!-- Vehicle Management -->
                         <div class="bg-white rounded-2xl card-shadow overflow-hidden">
                             <div class="bg-slate-50 px-4 py-3 border-b border-slate-100 font-bold text-slate-500 text-xs uppercase">${utils.t('manage_vehicles')}</div>
                             ${store.data.vehicles.map(v => `
@@ -883,6 +929,31 @@
                             </button>
                         </div>
 
+                        <!-- Notification Settings -->
+                        <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                            <div class="bg-slate-50 px-4 py-3 border-b border-slate-100 font-bold text-slate-500 text-xs uppercase">${utils.t('notif_settings')}</div>
+                            
+                            ${['license', 'insurance', 'registration'].map(type => `
+                                <div class="p-4 border-b border-slate-100 last:border-0">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-slate-700 font-bold text-sm">${utils.t(type === 'license' ? 'license_renewal' : (type === 'insurance' ? 'insurance_renewal' : 'registration'))}</span>
+                                        <button onclick="store.data.settings.reminders['${type}'].enabled = !store.data.settings.reminders['${type}'].enabled; store.save(); ui.render();" class="text-3xl ${reminders[type].enabled ? 'text-sky-500' : 'text-slate-300'} transition">
+                                            <span class="material-icons">${reminders[type].enabled ? 'toggle_on' : 'toggle_off'}</span>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between ${!reminders[type].enabled ? 'opacity-50 pointer-events-none' : ''}">
+                                        <span class="text-xs text-slate-400">${utils.t('reminder_timing')}</span>
+                                        <select onchange="store.data.settings.reminders['${type}'].days = parseInt(this.value); store.save(); ui.render();" class="bg-slate-100 rounded-lg px-3 py-1 text-xs font-bold text-slate-600 outline-none">
+                                            <option value="0" ${reminders[type].days===0?'selected':''}>${utils.t('day_0')}</option>
+                                            <option value="7" ${reminders[type].days===7?'selected':''}>${utils.t('day_7')}</option>
+                                            <option value="30" ${reminders[type].days===30?'selected':''}>${utils.t('day_30')}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <!-- App Settings -->
                         <div class="bg-white rounded-2xl card-shadow overflow-hidden">
                             <div class="bg-slate-50 px-4 py-3 border-b border-slate-100 font-bold text-slate-500 text-xs uppercase">${utils.t('app_settings')}</div>
                             
