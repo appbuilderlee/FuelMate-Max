@@ -249,7 +249,15 @@
                 c_sedan: "Sedan/Hatch", c_suv: "SUV", c_truck: "Truck", c_bike: "Motorcycle",
                 c_sports: "Sports Car", c_van: "Van/MPV", c_bus: "Bus",
                 col_blue: "Blue", col_red: "Red", col_black: "Black", col_white: "White", col_silver: "Silver",
-                col_green: "Green", col_yellow: "Yellow", col_orange: "Orange", col_purple: "Purple", col_brown: "Brown", col_grey: "Dark Grey"
+                col_green: "Green", col_yellow: "Yellow", col_orange: "Orange", col_purple: "Purple", col_brown: "Brown", col_grey: "Dark Grey",
+                col_dark_red: "Dark Red", col_dark_green: "Dark Green", col_pink: "Pink", col_teal: "Teal", col_gold: "Gold",
+                about_app: "About FuelMate", about_desc: "Version 1.0.0",
+                about_intro: "FuelMate is your complete vehicle companion. Track fuel efficiency, log maintenance, manage expenses, and never miss a renewal deadline.",
+                about_features: "Key Features",
+                feat_1: "Track Fuel (L/gal/kWh) & Costs", feat_2: "Maintenance & Service Logs", feat_3: "Expense Analytics & Charts",
+                feat_4: "Renewal Reminders (Calendar Sync)", feat_5: "Offline & Privacy Focused",
+                about_tech: "Architecture",
+                tech_desc: "Built as a Single-File PWA using Vanilla JavaScript. No servers, no tracking. All data is stored locally on your device."
             },
             zh: {
                 t_dash: "首頁", t_fuel: "加油", t_service: "維修/其他", t_parking: "停車", t_analytics: "統計", t_settings: "設定",
@@ -307,7 +315,14 @@
                 c_sports: "跑車", c_van: "廂型車/MPV", c_bus: "巴士",
                 col_blue: "藍色", col_red: "紅色", col_black: "黑色", col_white: "白色", col_silver: "銀色",
                 col_green: "綠色", col_yellow: "黃色", col_orange: "橙色", col_purple: "紫色", col_brown: "棕色", col_grey: "深灰",
-                col_dark_red: "深紅", col_dark_green: "深綠", col_pink: "粉紅", col_teal: "青色", col_gold: "金色"
+                col_dark_red: "深紅", col_dark_green: "深綠", col_pink: "粉紅", col_teal: "青色", col_gold: "金色",
+                about_app: "關於 FuelMate", about_desc: "版本 1.0.0",
+                about_intro: "FuelMate 是您的全方位車輛管家。追蹤油耗、記錄維修、管理支出，並確保不錯過任何續期截止日。",
+                about_features: "核心功能",
+                feat_1: "追蹤油耗 (L/gal/kWh) 與成本", feat_2: "維修保養與服務記錄", feat_3: "支出統計與趨勢分析",
+                feat_4: "續期提醒 (支援日曆同步)", feat_5: "離線使用，隱私優先",
+                about_tech: "技術架構",
+                tech_desc: "採用單文件 PWA 技術構建，使用原生 JavaScript。無後端伺服器、無數據追蹤。所有資料均存儲在您的設備本地。"
             }
         };
 
@@ -1379,8 +1394,55 @@
                                 <input type="file" accept=".json" onchange="ui.importData(this)" class="hidden">
                             </label>
                         </div>
+
+                        <div class="text-center pt-8">
+                            <button onclick="ui.openAboutModal()" class="text-slate-400 hover:text-sky-500 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-1 mx-auto">
+                                <span class="material-icons text-sm">info</span> ${utils.t('about_app')}
+                            </button>
+                        </div>
                     </div>
                 `;
+            },
+            
+            openAboutModal() {
+                const html = `
+                    <div class="p-6">
+                        <div class="text-center mb-6">
+                            <div class="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-sky-200">
+                                <span class="material-icons text-4xl text-white">local_gas_station</span>
+                            </div>
+                            <h2 class="text-2xl font-bold theme-text-heading">FuelMate</h2>
+                            <p class="text-sm text-slate-400">${utils.t('about_desc')}</p>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
+                                <p class="text-sm theme-text-main leading-relaxed">${utils.t('about_intro')}</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">${utils.t('about_features')}</h3>
+                                <ul class="space-y-2 text-sm theme-text-main">
+                                    <li class="flex items-start gap-2"><span class="material-icons text-sky-500 text-sm mt-0.5">check_circle</span> ${utils.t('feat_1')}</li>
+                                    <li class="flex items-start gap-2"><span class="material-icons text-sky-500 text-sm mt-0.5">check_circle</span> ${utils.t('feat_2')}</li>
+                                    <li class="flex items-start gap-2"><span class="material-icons text-sky-500 text-sm mt-0.5">check_circle</span> ${utils.t('feat_3')}</li>
+                                    <li class="flex items-start gap-2"><span class="material-icons text-sky-500 text-sm mt-0.5">check_circle</span> ${utils.t('feat_4')}</li>
+                                    <li class="flex items-start gap-2"><span class="material-icons text-sky-500 text-sm mt-0.5">check_circle</span> ${utils.t('feat_5')}</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">${utils.t('about_tech')}</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed border-l-2 border-slate-200 dark:border-slate-700 pl-3">
+                                    ${utils.t('tech_desc')}
+                                </p>
+                            </div>
+                        </div>
+
+                        <button onclick="ui.closeModal()" class="w-full mt-8 bg-slate-100 text-slate-500 font-bold py-3 rounded-xl">${utils.t('cancel')}</button>
+                    </div>
+                `;
+                this.openModal(html);
             },
 
             openVehicleSelector() {
@@ -1733,6 +1795,22 @@
                     </form>
                 `;
                 this.openModal(html);
+            },
+
+            submitParking(id) {
+                const log = {
+                    id: id || utils.uuid(),
+                    vehicleId: store.data.settings.activeVehicleId,
+                    type: 'parking',
+                    date: document.getElementById('p_date').value,
+                    cost: document.getElementById('p_cost').value,
+                    location: document.getElementById('p_location').value,
+                    notes: document.getElementById('p_notes').value
+                };
+                if (id) store.updateLog(log);
+                else store.addLog(log);
+                this.closeModal();
+                this.render();
             },
 
             openAddVehicle(id = null) {
