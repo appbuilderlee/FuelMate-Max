@@ -96,6 +96,14 @@
 
         /* Floating Action Button */
         .fab-shadow { box-shadow: 0 4px 15px rgba(0, 180, 219, 0.4); }
+        
+        /* FAB Safe Position */
+        .fab-safe {
+            position: fixed;
+            right: 1.5rem;
+            bottom: calc(85px + var(--safe-bottom));
+            z-index: 30;
+        }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 0px; background: transparent; }
@@ -999,7 +1007,7 @@
                              ${logs.map(log => this.renderLogCard(log)).join('') || `<div class="text-center text-slate-400 py-12 italic">${utils.t('no_records')}</div>`}
                         </div>
                     </div>
-                    <button onclick="ui.openAddFuel()" class="fixed bottom-24 right-6 bg-gradient-to-r from-teal-400 to-teal-600 text-white w-14 h-14 rounded-full flex items-center justify-center fab-shadow active:scale-90 transition transform z-30">
+                    <button onclick="ui.openAddFuel()" class="fab-safe bg-gradient-to-r from-teal-400 to-teal-600 text-white w-14 h-14 rounded-full flex items-center justify-center fab-shadow active:scale-90 transition transform z-30">
                         <span class="material-icons text-3xl">add</span>
                     </button>
                 `;
@@ -1031,7 +1039,7 @@
                              ${logs.map(log => this.renderLogCard(log)).join('') || `<div class="text-center text-slate-400 py-12 italic">${utils.t('no_records')}</div>`}
                         </div>
                     </div>
-                    <button onclick="ui.openAddService()" class="fixed bottom-24 right-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white w-14 h-14 rounded-full flex items-center justify-center fab-shadow active:scale-90 transition transform z-30">
+                    <button onclick="ui.openAddService()" class="fab-safe bg-gradient-to-r from-indigo-500 to-purple-600 text-white w-14 h-14 rounded-full flex items-center justify-center fab-shadow active:scale-90 transition transform z-30">
                         <span class="material-icons text-3xl">add</span>
                     </button>
                 `;
@@ -1051,7 +1059,7 @@
                              ${logs.map(log => this.renderLogCard(log)).join('') || `<div class="text-center text-slate-400 py-12 italic">${utils.t('no_records')}</div>`}
                         </div>
                     </div>
-                    <button onclick="ui.openAddParking()" class="fixed bottom-24 right-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white w-14 h-14 rounded-full flex items-center justify-center fab-shadow active:scale-90 transition transform z-30">
+                    <button onclick="ui.openAddParking()" class="fab-safe bg-gradient-to-r from-blue-500 to-blue-600 text-white w-14 h-14 rounded-full flex items-center justify-center fab-shadow active:scale-90 transition transform z-30">
                         <span class="material-icons text-3xl">add</span>
                     </button>
                 `;
