@@ -306,7 +306,8 @@
                 c_sedan: "房車/轎車", c_suv: "休旅車/SUV", c_truck: "卡車", c_bike: "機車",
                 c_sports: "跑車", c_van: "廂型車/MPV", c_bus: "巴士",
                 col_blue: "藍色", col_red: "紅色", col_black: "黑色", col_white: "白色", col_silver: "銀色",
-                col_green: "綠色", col_yellow: "黃色", col_orange: "橙色", col_purple: "紫色", col_brown: "棕色", col_grey: "深灰"
+                col_green: "綠色", col_yellow: "黃色", col_orange: "橙色", col_purple: "紫色", col_brown: "棕色", col_grey: "深灰",
+                col_dark_red: "深紅", col_dark_green: "深綠", col_pink: "粉紅", col_teal: "青色", col_gold: "金色"
             }
         };
 
@@ -669,9 +670,22 @@
                     blue: 'bg-sky-500', red: 'bg-red-500', black: 'bg-slate-800', white: 'bg-slate-200 text-slate-600',
                     green: 'bg-emerald-500', silver: 'bg-gray-400',
                     yellow: 'bg-yellow-400 text-yellow-900', orange: 'bg-orange-500', 
-                    purple: 'bg-purple-500', brown: 'bg-amber-800', grey: 'bg-slate-600'
+                    purple: 'bg-purple-500', brown: 'bg-amber-800', grey: 'bg-slate-600',
+                    dark_red: 'bg-red-900', dark_green: 'bg-emerald-900', cyan: 'bg-cyan-500',
+                    pink: 'bg-pink-500', teal: 'bg-teal-600', gold: 'bg-yellow-600 text-yellow-900'
                 };
                 return map[color] || 'bg-sky-500';
+            },
+            getVehicleGradient(color) {
+                const map = {
+                    blue: 'from-cyan-500 to-blue-600', red: 'from-rose-500 to-red-600', black: 'from-slate-700 to-slate-900',
+                    white: 'from-slate-300 to-slate-400', green: 'from-emerald-500 to-teal-600', silver: 'from-gray-400 to-slate-500',
+                    yellow: 'from-yellow-400 to-orange-500', orange: 'from-orange-500 to-red-500',
+                    purple: 'from-purple-500 to-indigo-600', brown: 'from-amber-700 to-orange-900', grey: 'from-gray-500 to-slate-600',
+                    dark_red: 'from-red-800 to-red-950', dark_green: 'from-emerald-800 to-emerald-950', cyan: 'from-cyan-400 to-cyan-600',
+                    pink: 'from-pink-500 to-rose-500', teal: 'from-teal-500 to-teal-700', gold: 'from-yellow-500 to-yellow-700'
+                };
+                return map[color] || 'from-cyan-500 to-blue-600';
             }
         };
 
@@ -724,14 +738,14 @@
                 const years = utils.getAvailableYears();
                 const currentYear = new Date().getFullYear().toString();
 
-                const pillClass = (mode) => `px-3 py-1 rounded-full transition-all uppercase ${filter.mode === mode ? (isDark ? 'bg-white text-sky-600 shadow-sm' : 'bg-white dark:bg-slate-500 theme-text-heading shadow-sm') : (isDark ? 'text-white/80 hover:bg-white/10' : 'text-slate-500 dark:text-slate-400')}`;
+                const pillClass = (mode) => `px-3 py-1 rounded-full transition-all uppercase text-[10px] sm:text-xs ${filter.mode === mode ? (isDark ? 'bg-white text-sky-600 shadow-sm font-bold' : 'bg-white dark:bg-slate-500 theme-text-heading shadow-sm font-bold') : (isDark ? 'text-white/80 hover:bg-white/10' : 'text-slate-500 dark:text-slate-400')}`;
 
                 let inputHtml = '';
                 if (filter.mode === 'month') {
-                    inputHtml = `<input type="month" value="${filter.value}" onchange="store.pageFilters['${pageType}'].value=this.value;ui.render()" class="bg-white/20 backdrop-blur text-center text-sm font-bold py-1 px-2 rounded-lg outline-none ${isDark ? 'text-white placeholder-white/50' : 'text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600'}">`;
+                    inputHtml = `<input type="month" value="${filter.value}" onchange="store.pageFilters['${pageType}'].value=this.value;ui.render()" class="bg-white/20 backdrop-blur text-center text-xs font-bold py-1 px-2 rounded-lg outline-none h-7 ${isDark ? 'text-white placeholder-white/50' : 'text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600'}">`;
                 } else if (filter.mode === 'year') {
                     inputHtml = `
-                        <select onchange="store.pageFilters['${pageType}'].value=this.value;ui.render()" class="bg-white/20 backdrop-blur text-center text-sm font-bold py-1 px-2 rounded-lg outline-none ${isDark ? 'text-slate-800' : 'text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600'}">
+                        <select onchange="store.pageFilters['${pageType}'].value=this.value;ui.render()" class="bg-white/20 backdrop-blur text-center text-xs font-bold py-1 px-2 rounded-lg outline-none h-7 ${isDark ? 'text-slate-800' : 'text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600'}">
                             ${years.map(y => `<option value="${y}" ${filter.value == y ? 'selected' : ''}>${y}</option>`).join('')}
                         </select>`;
                 }
@@ -749,9 +763,9 @@
                                 <div class="text-3xl font-bold flex items-center gap-2">${title}</div>
                             </div>
                         </div>
-                        <div class="absolute bottom-6 w-full flex flex-row items-center justify-center gap-3 z-20 px-4">
+                        <div class="absolute bottom-6 w-full flex flex-row items-center justify-center gap-2 z-20 px-4">
                              ${inputHtml}
-                             <div class="bg-black/20 backdrop-blur-md p-1 rounded-full flex text-xs font-medium shrink-0">
+                             <div class="bg-black/20 backdrop-blur-md p-1 rounded-full flex shrink-0">
                                  <button onclick="store.pageFilters['${pageType}'] = {mode:'month', value:'${new Date().toISOString().slice(0,7)}'};ui.render()" class="${pillClass('month')}">${utils.t('mode_month')}</button>
                                  <button onclick="store.pageFilters['${pageType}'] = {mode:'year', value:'${currentYear}'};ui.render()" class="${pillClass('year')}">${utils.t('mode_year')}</button>
                                  <button onclick="store.pageFilters['${pageType}'] = {mode:'all', value:''};ui.render()" class="${pillClass('all')}">${utils.t('mode_all')}</button>
@@ -769,7 +783,7 @@
                             </div>
                             <div class="flex flex-row items-center justify-end gap-2 mt-2">
                                 ${inputHtml}
-                                <div class="bg-slate-200 dark:bg-slate-700 p-1 rounded-full flex text-[10px] font-bold shrink-0">
+                                <div class="bg-slate-200 dark:bg-slate-700 p-1 rounded-full flex shrink-0">
                                      <button onclick="store.pageFilters['${pageType}'] = {mode:'month', value:'${new Date().toISOString().slice(0,7)}'};ui.render()" class="${pillClass('month')}">${utils.t('mode_month')}</button>
                                      <button onclick="store.pageFilters['${pageType}'] = {mode:'year', value:'${currentYear}'};ui.render()" class="${pillClass('year')}">${utils.t('mode_year')}</button>
                                      <button onclick="store.pageFilters['${pageType}'] = {mode:'all', value:''};ui.render()" class="${pillClass('all')}">${utils.t('mode_all')}</button>
@@ -826,13 +840,7 @@
                 const daysSinceBackup = lastBackup ? Math.ceil((Date.now() - lastBackup) / (1000 * 60 * 60 * 24)) : 30;
                 const showBackupBanner = !store.pageFilters.hideBackupBanner && daysSinceBackup >= 30 && logs.length > 0;
 
-                // Dynamic Color Background based on car color
-                const bgClass = {
-                    blue: 'from-cyan-500 to-blue-600', red: 'from-rose-500 to-red-600', black: 'from-slate-700 to-slate-900',
-                    white: 'from-slate-300 to-slate-400', green: 'from-emerald-500 to-teal-600', silver: 'from-gray-400 to-slate-500',
-                    yellow: 'from-yellow-400 to-orange-500', orange: 'from-orange-500 to-red-500',
-                    purple: 'from-purple-500 to-indigo-600', brown: 'from-amber-700 to-orange-900', grey: 'from-gray-500 to-slate-600'
-                }[vehicle.color || 'blue'];
+                const bgClass = utils.getVehicleGradient(vehicle.color || 'blue');
 
                 const headerHtml = this.renderFilterHeader(`<span onclick="ui.openAddVehicle('${vehicle.id}')" class="cursor-pointer flex items-center gap-2">${vehicle.model} <span class="material-icons text-2xl opacity-80">edit</span></span>`, '', 'dashboard', true);
 
@@ -1734,6 +1742,18 @@
                     if (existing) v = { ...existing };
                 }
 
+                const colors = [
+                    { k: 'blue', bg: 'bg-sky-500' }, { k: 'red', bg: 'bg-red-500' }, 
+                    { k: 'dark_red', bg: 'bg-red-900' }, { k: 'black', bg: 'bg-slate-900' },
+                    { k: 'white', bg: 'bg-white border border-slate-200' }, { k: 'silver', bg: 'bg-gray-400' },
+                    { k: 'green', bg: 'bg-emerald-500' }, { k: 'dark_green', bg: 'bg-emerald-900' },
+                    { k: 'teal', bg: 'bg-teal-600' }, { k: 'cyan', bg: 'bg-cyan-500' },
+                    { k: 'yellow', bg: 'bg-yellow-400' }, { k: 'gold', bg: 'bg-yellow-600' },
+                    { k: 'orange', bg: 'bg-orange-500' }, { k: 'brown', bg: 'bg-amber-800' },
+                    { k: 'purple', bg: 'bg-purple-500' }, { k: 'pink', bg: 'bg-pink-500' },
+                    { k: 'grey', bg: 'bg-slate-600' }
+                ];
+
                 const html = `
                     <form onsubmit="event.preventDefault(); ui.submitVehicle('${id || ''}')" class="p-6">
                         <h3 class="text-lg font-bold mb-6 theme-text-heading">${id ? utils.t('edit_vehicle') : utils.t('add_vehicle')}</h3>
@@ -1753,23 +1773,18 @@
                                 <input type="text" id="v_model" required value="${v.model}" placeholder="Civic" class="w-full input-field rounded-xl p-3 font-bold">
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('vehicle_color')}</label>
-                                    <select id="v_color" class="w-full input-field rounded-xl p-3 font-bold">
-                                        <option value="blue" ${v.color==='blue'?'selected':''}>${utils.t('col_blue')}</option>
-                                        <option value="red" ${v.color==='red'?'selected':''}>${utils.t('col_red')}</option>
-                                        <option value="black" ${v.color==='black'?'selected':''}>${utils.t('col_black')}</option>
-                                        <option value="white" ${v.color==='white'?'selected':''}>${utils.t('col_white')}</option>
-                                        <option value="silver" ${v.color==='silver'?'selected':''}>${utils.t('col_silver')}</option>
-                                        <option value="green" ${v.color==='green'?'selected':''}>${utils.t('col_green')}</option>
-                                        <option value="yellow" ${v.color==='yellow'?'selected':''}>${utils.t('col_yellow')}</option>
-                                        <option value="orange" ${v.color==='orange'?'selected':''}>${utils.t('col_orange')}</option>
-                                        <option value="purple" ${v.color==='purple'?'selected':''}>${utils.t('col_purple')}</option>
-                                        <option value="brown" ${v.color==='brown'?'selected':''}>${utils.t('col_brown')}</option>
-                                        <option value="grey" ${v.color==='grey'?'selected':''}>${utils.t('col_grey')}</option>
-                                    </select>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase block mb-2">${utils.t('vehicle_color')}</label>
+                                <input type="hidden" id="v_color" value="${v.color}">
+                                <div class="grid grid-cols-6 gap-3">
+                                    ${colors.map(c => `
+                                        <button type="button" onclick="document.getElementById('v_color').value='${c.k}'; this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('ring-2','ring-offset-2','ring-sky-500')); this.classList.add('ring-2','ring-offset-2','ring-sky-500')" 
+                                            class="w-8 h-8 rounded-full ${c.bg} ${v.color === c.k ? 'ring-2 ring-offset-2 ring-sky-500' : ''} shadow-sm"></button>
+                                    `).join('')}
                                 </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('vehicle_type')}</label>
                                     <select id="v_type" class="w-full input-field rounded-xl p-3 font-bold">
@@ -1782,19 +1797,19 @@
                                         <option value="bus" ${v.type==='bus'?'selected':''}>${utils.t('c_bus')}</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('fuel_unit')}</label>
+                                    <select id="v_fuelUnit" class="w-full input-field rounded-xl p-3 font-bold">
+                                        <option value="L" ${v.fuelUnit === 'L' ? 'selected' : ''}>Liters (L)</option>
+                                        <option value="gal" ${v.fuelUnit === 'gal' ? 'selected' : ''}>Gallons (gal)</option>
+                                        <option value="kWh" ${v.fuelUnit === 'kWh' ? 'selected' : ''}>kWh (EV)</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div>
                                 <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('odometer')}</label>
                                 <input type="number" id="v_odo" required value="${v.currentOdometer}" class="w-full input-field rounded-xl p-3 font-bold">
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('fuel_unit')}</label>
-                                <select id="v_fuelUnit" class="w-full input-field rounded-xl p-3 font-bold">
-                                    <option value="L" ${v.fuelUnit === 'L' ? 'selected' : ''}>Liters (L)</option>
-                                    <option value="gal" ${v.fuelUnit === 'gal' ? 'selected' : ''}>Gallons (gal)</option>
-                                    <option value="kWh" ${v.fuelUnit === 'kWh' ? 'selected' : ''}>kWh (EV)</option>
-                                </select>
                             </div>
                         </div>
                         
@@ -2044,6 +2059,48 @@
             } else {
                 alert("Geolocation is not supported by your browser.");
             }
+        };
+
+        // Calendar Export Helper
+        utils.exportCalendar = function(type, alarmDays) {
+            const log = store.getVehicleLogs().find(l => l.type === type && l.expiryDate);
+            if (!log) return alert(utils.t('no_expiry_found'));
+
+            const dateStr = log.expiryDate.replace(/-/g, '');
+            const title = `${store.getActiveVehicle().model} - ${utils.t(type === 'license' ? 'license_renewal' : (type === 'insurance' ? 'insurance_renewal' : 'registration'))}`;
+            
+            let alarmBlock = '';
+            if (alarmDays !== null) {
+                let trigger = '';
+                if (alarmDays === 0) trigger = '-PT9H'; 
+                else if (alarmDays === 7) trigger = '-P1W';
+                else if (alarmDays === 30) trigger = '-P4W'; 
+                
+                if (trigger) {
+                     alarmBlock = `BEGIN:VALARM\nTRIGGER:${trigger}\nDESCRIPTION:${title}\nACTION:DISPLAY\nEND:VALARM\n`;
+                }
+            }
+
+            const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//FuelMate//EN
+BEGIN:VEVENT
+UID:${utils.uuid()}
+DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
+DTSTART;VALUE=DATE:${dateStr}
+SUMMARY:${title}
+DESCRIPTION:FuelMate Reminder
+${alarmBlock}END:VEVENT
+END:VCALENDAR`;
+
+            const blob = new Blob([icsContent], { type: 'text/calendar' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'reminder.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         };
 
         /* --- INIT --- */
