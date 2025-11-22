@@ -101,7 +101,7 @@
         ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
     <script>
-        // Dynamic Icon Generator (High-Res Vector)
+        // Dynamic Icon Generator (Simple, Robust, High-Res)
         (function() {
             const size = 1024;
             const canvas = document.createElement('canvas');
@@ -109,32 +109,52 @@
             canvas.height = size;
             const ctx = canvas.getContext('2d');
 
-            // Background Gradient - Standard iOS Blue/Teal Style
+            // 1. Background Gradient
             const grd = ctx.createLinearGradient(0, 0, size, size);
             grd.addColorStop(0, '#0ea5e9'); // Sky 500
             grd.addColorStop(1, '#0284c7'); // Sky 600
             ctx.fillStyle = grd;
             ctx.fillRect(0, 0, size, size);
 
-            // Icon Drawing using Vector Path (Simple, Solid Gas Pump)
-            ctx.translate(size / 2, size / 2);
-            
-            // Scale calculation to fit 24x24 path into 1024x1024 canvas with padding
-            // 1024 / 32 = 32px per unit. 
-            const scale = size / 32; 
-            ctx.scale(scale, scale);
-            
-            // Center the 24x24 path: Translate by half of 24 = 12
-            ctx.translate(-12, -12); 
-            
-            ctx.fillStyle = 'white';
-            
-            // Material Icon 'local_gas_station' path. 
-            // It is a solid shape with a hole for the screen.
-            // Use "evenodd" fill rule to ensure the screen is transparent.
-            const path = new Path2D("M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33a2.5 2.5 0 0 0 2.5 2.5c.36 0 .69-.09.98-.26l.02.01L19 11.24V2H5v20h10v-3h4v5h2V7.23zM7 12V6h6v6H7z");
-            ctx.fill(path, "evenodd");
+            // 2. Draw Simplified Gas Pump
+            // Scale coordinate system to 100x100 for easier drawing
+            ctx.translate(size * 0.15, size * 0.15); // Add padding
+            const s = (size * 0.7) / 100; // Use 70% of available space
+            ctx.scale(s, s);
 
+            // Pump Body (Solid White Rounded Rect)
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            // x=10, y=10, w=50, h=80, r=4
+            ctx.roundRect(10, 10, 50, 80, 4);
+            ctx.fill();
+
+            // Screen Window (Erase/Clear)
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            // x=18, y=20, w=34, h=25, r=2
+            ctx.roundRect(18, 20, 34, 25, 2);
+            ctx.fill();
+            
+            // Reset composite to draw white again
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Hose/Nozzle (Thick Stroke)
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            // Start from side of body
+            ctx.moveTo(65, 25);
+            // Hook shape
+            ctx.lineTo(75, 25); 
+            ctx.lineTo(75, 60); 
+            // Nozzle tip inward
+            ctx.lineTo(60, 60);
+            ctx.stroke();
+
+            // 3. Generate Links
             const dataUrl = canvas.toDataURL('image/png');
             const link = document.createElement('link');
             link.rel = 'apple-touch-icon';
