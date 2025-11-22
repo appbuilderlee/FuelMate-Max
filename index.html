@@ -183,7 +183,9 @@
                 notif_settings: "Notifications", reminder_timing: "Remind me", 
                 day_0: "On the day", day_7: "1 Week before", day_30: "1 Month before",
                 export_cal_title: "Add to Calendar", export_cal_desc: "Select an item to add to your iPhone calendar",
-                no_expiry_found: "No expiry date found for this item. Please add a record first."
+                no_expiry_found: "No expiry date found for this item. Please add a record first.",
+                reminder_option_title: "Set Reminder Alert", reminder_none: "No Alert", 
+                reminder_on_day: "On Day of Expiry (9:00 AM)", reminder_1_week: "1 Week Before (9:00 AM)", reminder_1_month: "1 Month Before (9:00 AM)"
             },
             zh: {
                 t_dash: "首頁", t_fuel: "加油", t_service: "維修/其他", t_parking: "停車", t_analytics: "統計", t_settings: "設定",
@@ -212,7 +214,9 @@
                 notif_settings: "提醒通知設定", reminder_timing: "提醒時間", 
                 day_0: "當天提醒", day_7: "提早 1 週", day_30: "提早 1 個月",
                 export_cal_title: "加入日曆", export_cal_desc: "選擇要加入 iPhone 日曆的項目",
-                no_expiry_found: "找不到此項目的到期日，請先新增記錄。"
+                no_expiry_found: "找不到此項目的到期日，請先新增記錄。",
+                reminder_option_title: "選擇提醒時間", reminder_none: "無提醒", 
+                reminder_on_day: "當天提醒 (上午9:00)", reminder_1_week: "提早 1 週 (上午9:00)", reminder_1_month: "提早 1 個月 (上午9:00)"
             }
         };
 
@@ -424,7 +428,7 @@
                 }
                 return logs;
             },
-            exportCalendar(specificType = null) {
+            exportCalendar(specificType = null, alarmDays = null) {
                 const vehicle = store.getActiveVehicle();
                 if(!vehicle) return;
                 const logs = store.getVehicleLogs().filter(l => ['license', 'insurance', 'registration'].includes(l.type) && l.expiryDate);
@@ -453,6 +457,24 @@
                     icsContent += `DTSTART;VALUE=DATE:${date}\n`;
                     icsContent += `SUMMARY:${title}\n`;
                     icsContent += `DESCRIPTION:Vehicle: ${vehicle.make} ${vehicle.model}\n`;
+                    
+                    // Add Alarm if requested
+                    if (alarmDays !== null) {
+                        const trigger = alarmDays === 0 ? 'PT9H' : `-P${alarmDays}D`; // If 0, 9am on day. Else X days before.
+                        // If 0, we want it on the day. Usually ICS all day events trigger relative to start. 
+                        // Let's use -P0D or PT9H if we want morning.
+                        // For broad compatibility, P1W, P1D etc.
+                        // Trigger for all day event: relative to date.
+                        // If alarmDays > 0, use -P{days}D. If 0, use PT9H (9 hours after start of day = 9am)
+                        const triggerVal = alarmDays === 0 ? 'PT9H' : `-P${alarmDays}D`;
+                        
+                        icsContent += "BEGIN:VALARM\n";
+                        icsContent += `TRIGGER:${triggerVal}\n`;
+                        icsContent += "ACTION:DISPLAY\n";
+                        icsContent += "DESCRIPTION:Reminder\n";
+                        icsContent += "END:VALARM\n";
+                    }
+                    
                     icsContent += "END:VEVENT\n";
                 });
                 icsContent += "END:VCALENDAR";
@@ -1047,7 +1069,7 @@
                         <p class="text-sm text-slate-500 mb-6">${utils.t('export_cal_desc')}</p>
                         
                         <div class="space-y-3">
-                            <button onclick="utils.exportCalendar('license'); ui.closeModal()" class="w-full p-4 bg-slate-50 rounded-2xl flex items-center gap-4 hover:bg-sky-50 border border-transparent hover:border-sky-200 transition">
+                            <button onclick="ui.openCalendarConfig('license')" class="w-full p-4 bg-slate-50 rounded-2xl flex items-center gap-4 hover:bg-sky-50 border border-transparent hover:border-sky-200 transition">
                                 <div class="w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center">
                                     <span class="material-icons">description</span>
                                 </div>
@@ -1055,7 +1077,7 @@
                                 <span class="material-icons text-slate-300">chevron_right</span>
                             </button>
                             
-                            <button onclick="utils.exportCalendar('insurance'); ui.closeModal()" class="w-full p-4 bg-slate-50 rounded-2xl flex items-center gap-4 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition">
+                            <button onclick="ui.openCalendarConfig('insurance')" class="w-full p-4 bg-slate-50 rounded-2xl flex items-center gap-4 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition">
                                 <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
                                     <span class="material-icons">security</span>
                                 </div>
@@ -1063,12 +1085,43 @@
                                 <span class="material-icons text-slate-300">chevron_right</span>
                             </button>
 
-                            <button onclick="utils.exportCalendar('registration'); ui.closeModal()" class="w-full p-4 bg-slate-50 rounded-2xl flex items-center gap-4 hover:bg-teal-50 border border-transparent hover:border-teal-200 transition">
+                            <button onclick="ui.openCalendarConfig('registration')" class="w-full p-4 bg-slate-50 rounded-2xl flex items-center gap-4 hover:bg-teal-50 border border-transparent hover:border-teal-200 transition">
                                 <div class="w-10 h-10 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center">
                                     <span class="material-icons">confirmation_number</span>
                                 </div>
                                 <div class="text-left font-bold text-slate-700 flex-1">${utils.t('registration')}</div>
                                 <span class="material-icons text-slate-300">chevron_right</span>
+                            </button>
+                        </div>
+                        
+                        <button onclick="ui.closeModal()" class="w-full mt-6 py-3 text-slate-400 font-bold">${utils.t('cancel')}</button>
+                    </div>
+                `);
+            },
+            
+            openCalendarConfig(type) {
+                this.openModal(`
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <button onclick="ui.openCalendarSelector()" class="text-slate-400 hover:text-slate-600">
+                                <span class="material-icons">arrow_back</span>
+                            </button>
+                            <h3 class="text-xl font-bold text-slate-800">${utils.t('reminder_option_title')}</h3>
+                        </div>
+                        <p class="text-sm text-slate-500 mb-6 font-medium">${utils.t(type === 'license' ? 'license_renewal' : (type === 'insurance' ? 'insurance_renewal' : 'registration'))}</p>
+                        
+                        <div class="space-y-3">
+                             <button onclick="utils.exportCalendar('${type}', null); ui.closeModal()" class="w-full p-4 bg-slate-50 rounded-2xl text-left font-bold text-slate-700 hover:bg-slate-100 transition">
+                                ${utils.t('reminder_none')}
+                            </button>
+                            <button onclick="utils.exportCalendar('${type}', 0); ui.closeModal()" class="w-full p-4 bg-sky-50 rounded-2xl text-left font-bold text-sky-700 hover:bg-sky-100 transition border border-sky-100">
+                                ${utils.t('reminder_on_day')}
+                            </button>
+                             <button onclick="utils.exportCalendar('${type}', 7); ui.closeModal()" class="w-full p-4 bg-sky-50 rounded-2xl text-left font-bold text-sky-700 hover:bg-sky-100 transition border border-sky-100">
+                                ${utils.t('reminder_1_week')}
+                            </button>
+                             <button onclick="utils.exportCalendar('${type}', 30); ui.closeModal()" class="w-full p-4 bg-sky-50 rounded-2xl text-left font-bold text-sky-700 hover:bg-sky-100 transition border border-sky-100">
+                                ${utils.t('reminder_1_month')}
                             </button>
                         </div>
                         
