@@ -246,7 +246,10 @@
                 remind_later: "Later",
                 input_mode: "Input Mode", odo_total: "Total ODO", odo_trip: "Trip Distance",
                 bar_chart: "Monthly Expenses", vehicle_color: "Color", vehicle_type: "Body Type",
-                c_sedan: "Sedan/Hatch", c_suv: "SUV/Van", c_truck: "Truck", c_bike: "Motorcycle"
+                c_sedan: "Sedan/Hatch", c_suv: "SUV", c_truck: "Truck", c_bike: "Motorcycle",
+                c_sports: "Sports Car", c_van: "Van/MPV", c_bus: "Bus",
+                col_blue: "Blue", col_red: "Red", col_black: "Black", col_white: "White", col_silver: "Silver",
+                col_green: "Green", col_yellow: "Yellow", col_orange: "Orange", col_purple: "Purple", col_brown: "Brown", col_grey: "Dark Grey"
             },
             zh: {
                 t_dash: "首頁", t_fuel: "加油", t_service: "維修/其他", t_parking: "停車", t_analytics: "統計", t_settings: "設定",
@@ -300,7 +303,10 @@
                 remind_later: "稍後",
                 input_mode: "輸入模式", odo_total: "總里程", odo_trip: "行駛距離 (Trip)",
                 bar_chart: "每月支出統計", vehicle_color: "車輛顏色", vehicle_type: "車型",
-                c_sedan: "房車/轎車", c_suv: "休旅/貨車", c_truck: "卡車", c_bike: "機車"
+                c_sedan: "房車/轎車", c_suv: "休旅車/SUV", c_truck: "卡車", c_bike: "機車",
+                c_sports: "跑車", c_van: "廂型車/MPV", c_bus: "巴士",
+                col_blue: "藍色", col_red: "紅色", col_black: "黑色", col_white: "白色", col_silver: "銀色",
+                col_green: "綠色", col_yellow: "黃色", col_orange: "橙色", col_purple: "紫色", col_brown: "棕色", col_grey: "深灰"
             }
         };
 
@@ -651,14 +657,19 @@
             },
             getCarIcon(vehicle) {
                 const type = vehicle.type || 'sedan';
-                const iconMap = { sedan: 'directions_car', suv: 'airport_shuttle', truck: 'local_shipping', bike: 'two_wheeler' };
+                const iconMap = { 
+                    sedan: 'directions_car', suv: 'airport_shuttle', truck: 'local_shipping', bike: 'two_wheeler',
+                    sports: 'sports_car', van: 'airport_shuttle', bus: 'directions_bus'
+                };
                 return iconMap[type] || 'directions_car';
             },
             getCarColorClass(vehicle) {
                 const color = vehicle.color || 'blue';
                 const map = {
                     blue: 'bg-sky-500', red: 'bg-red-500', black: 'bg-slate-800', white: 'bg-slate-200 text-slate-600',
-                    green: 'bg-emerald-500', silver: 'bg-gray-400'
+                    green: 'bg-emerald-500', silver: 'bg-gray-400',
+                    yellow: 'bg-yellow-400 text-yellow-900', orange: 'bg-orange-500', 
+                    purple: 'bg-purple-500', brown: 'bg-amber-800', grey: 'bg-slate-600'
                 };
                 return map[color] || 'bg-sky-500';
             }
@@ -818,7 +829,9 @@
                 // Dynamic Color Background based on car color
                 const bgClass = {
                     blue: 'from-cyan-500 to-blue-600', red: 'from-rose-500 to-red-600', black: 'from-slate-700 to-slate-900',
-                    white: 'from-slate-300 to-slate-400', green: 'from-emerald-500 to-teal-600', silver: 'from-gray-400 to-slate-500'
+                    white: 'from-slate-300 to-slate-400', green: 'from-emerald-500 to-teal-600', silver: 'from-gray-400 to-slate-500',
+                    yellow: 'from-yellow-400 to-orange-500', orange: 'from-orange-500 to-red-500',
+                    purple: 'from-purple-500 to-indigo-600', brown: 'from-amber-700 to-orange-900', grey: 'from-gray-500 to-slate-600'
                 }[vehicle.color || 'blue'];
 
                 const headerHtml = this.renderFilterHeader(`<span onclick="ui.openAddVehicle('${vehicle.id}')" class="cursor-pointer flex items-center gap-2">${vehicle.model} <span class="material-icons text-2xl opacity-80">edit</span></span>`, '', 'dashboard', true);
@@ -1744,12 +1757,17 @@
                                 <div>
                                     <label class="text-xs font-bold text-slate-400 uppercase block mb-1">${utils.t('vehicle_color')}</label>
                                     <select id="v_color" class="w-full input-field rounded-xl p-3 font-bold">
-                                        <option value="blue" ${v.color==='blue'?'selected':''}>Blue</option>
-                                        <option value="red" ${v.color==='red'?'selected':''}>Red</option>
-                                        <option value="black" ${v.color==='black'?'selected':''}>Black</option>
-                                        <option value="white" ${v.color==='white'?'selected':''}>White</option>
-                                        <option value="silver" ${v.color==='silver'?'selected':''}>Silver</option>
-                                        <option value="green" ${v.color==='green'?'selected':''}>Green</option>
+                                        <option value="blue" ${v.color==='blue'?'selected':''}>${utils.t('col_blue')}</option>
+                                        <option value="red" ${v.color==='red'?'selected':''}>${utils.t('col_red')}</option>
+                                        <option value="black" ${v.color==='black'?'selected':''}>${utils.t('col_black')}</option>
+                                        <option value="white" ${v.color==='white'?'selected':''}>${utils.t('col_white')}</option>
+                                        <option value="silver" ${v.color==='silver'?'selected':''}>${utils.t('col_silver')}</option>
+                                        <option value="green" ${v.color==='green'?'selected':''}>${utils.t('col_green')}</option>
+                                        <option value="yellow" ${v.color==='yellow'?'selected':''}>${utils.t('col_yellow')}</option>
+                                        <option value="orange" ${v.color==='orange'?'selected':''}>${utils.t('col_orange')}</option>
+                                        <option value="purple" ${v.color==='purple'?'selected':''}>${utils.t('col_purple')}</option>
+                                        <option value="brown" ${v.color==='brown'?'selected':''}>${utils.t('col_brown')}</option>
+                                        <option value="grey" ${v.color==='grey'?'selected':''}>${utils.t('col_grey')}</option>
                                     </select>
                                 </div>
                                 <div>
@@ -1759,6 +1777,9 @@
                                         <option value="suv" ${v.type==='suv'?'selected':''}>${utils.t('c_suv')}</option>
                                         <option value="truck" ${v.type==='truck'?'selected':''}>${utils.t('c_truck')}</option>
                                         <option value="bike" ${v.type==='bike'?'selected':''}>${utils.t('c_bike')}</option>
+                                        <option value="sports" ${v.type==='sports'?'selected':''}>${utils.t('c_sports')}</option>
+                                        <option value="van" ${v.type==='van'?'selected':''}>${utils.t('c_van')}</option>
+                                        <option value="bus" ${v.type==='bus'?'selected':''}>${utils.t('c_bus')}</option>
                                     </select>
                                 </div>
                             </div>
