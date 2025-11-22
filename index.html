@@ -63,9 +63,9 @@
         .fab-shadow { box-shadow: 0 4px 15px rgba(0, 180, 219, 0.4); }
     </style>
     <script>
-        // Dynamic Icon Generator
+        // Dynamic Icon Generator (High-Res Vector)
         (function() {
-            const size = 512;
+            const size = 1024; // Double resolution for Retina sharpness
             const canvas = document.createElement('canvas');
             canvas.width = size;
             canvas.height = size;
@@ -78,12 +78,16 @@
             ctx.fillStyle = grd;
             ctx.fillRect(0, 0, size, size);
 
-            // Icon (Gas Pump)
+            // Icon Drawing using Vector Path (Sharper than font)
+            ctx.translate(size / 2, size / 2);
+            const scale = size / 36; // Scale factor for 24x24 grid
+            ctx.scale(scale, scale);
+            ctx.translate(-12, -12); // Center the 24x24 coordinate system
+            
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 300px Material Icons';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('local_gas_station', size/2, size/2);
+            // Material Design "Local Gas Station" Path
+            const path = new Path2D("M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33a2.5 2.5 0 002.5 2.5c.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5a2.5 2.5 0 005 0V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5zm6 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z");
+            ctx.fill(path);
 
             const dataUrl = canvas.toDataURL('image/png');
 
@@ -460,12 +464,6 @@
                     
                     // Add Alarm if requested
                     if (alarmDays !== null) {
-                        const trigger = alarmDays === 0 ? 'PT9H' : `-P${alarmDays}D`; // If 0, 9am on day. Else X days before.
-                        // If 0, we want it on the day. Usually ICS all day events trigger relative to start. 
-                        // Let's use -P0D or PT9H if we want morning.
-                        // For broad compatibility, P1W, P1D etc.
-                        // Trigger for all day event: relative to date.
-                        // If alarmDays > 0, use -P{days}D. If 0, use PT9H (9 hours after start of day = 9am)
                         const triggerVal = alarmDays === 0 ? 'PT9H' : `-P${alarmDays}D`;
                         
                         icsContent += "BEGIN:VALARM\n";
